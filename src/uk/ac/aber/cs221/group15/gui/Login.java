@@ -11,8 +11,8 @@ import javafx.stage.Window;
 
 /**
  * @author Darren White
- * @version 1.0
- * @since 1.0
+ * @version 0.0.1
+ * @since 0.0.1
  */
 public class Login extends Stage {
 
@@ -48,6 +48,7 @@ public class Login extends Stage {
 		txtEmail.setPromptText("Email address");
 		grid.add(txtEmail, 0, 1);
 
+		// Use password field for password
 		PasswordField pwd = new PasswordField();
 		pwd.setPromptText("Password");
 		grid.add(pwd, 0, 2);
@@ -60,7 +61,11 @@ public class Login extends Stage {
 		login.setMaxWidth(WIDTH);
 		grid.add(login, 0, 4);
 
+		// Set focus on the title label to begin with
+		// This ensures that the prompt text for
+		// Email and password is showing
 		lblTitle.requestFocus();
+
 		setScene(scene);
 	}
 
@@ -69,7 +74,8 @@ public class Login extends Stage {
 	}
 
 	private void login(boolean remember) {
-		loggedIn = false;
+		// TODO Login protocol
+		loggedIn = true;
 
 		close();
 	}

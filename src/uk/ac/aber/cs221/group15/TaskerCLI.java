@@ -1,8 +1,8 @@
 package uk.ac.aber.cs221.group15;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import uk.ac.aber.cs221.group15.gui.Login;
 import uk.ac.aber.cs221.group15.gui.OverviewPane;
@@ -25,20 +25,36 @@ public class TaskerCLI extends Application {
 	@Override
 	public void start(Stage stage) {
 		// Begin login protocol
-		Login login = new Login(stage);
-		login.sizeToScene();
-		login.showAndWait();
-
-		if (!login.isLoggedIn()) {
-			// return;
+		if (startLogin(stage)) {
+			// Show the main overview window
+			startOverview(stage);
 		}
 
+		// User did not login
+		// So we exit
+	}
+
+	public static boolean startLogin(Stage stage) {
+		// Create login window
+		// Use primary stage as owner
+		Login login = new Login(stage);
+		// Resize the login window
+		login.sizeToScene();
+		// Show and wait until it closes
+		login.showAndWait();
+
+		// Return if we are logged in or not
+		return login.isLoggedIn();
+	}
+
+	public static void startOverview(Stage stage) {
 		// Initialize and show main app
 		OverviewPane ovp = new OverviewPane();
-		Scene scene = new Scene(ovp, APP_WIDTH, APP_HEIGHT, Color.WHITE);
+		Scene scene = new Scene(ovp, APP_WIDTH, APP_HEIGHT);
 
 		stage.setScene(scene);
 		stage.setTitle(APP_NAME);
+		// Show main overview window
 		stage.show();
 	}
 }

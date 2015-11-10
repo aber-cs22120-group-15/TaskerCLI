@@ -7,8 +7,8 @@ import javafx.scene.text.Font;
 
 /**
  * @author Darren White
- * @version 1.0
- * @since 1.0
+ * @version 0.0.1
+ * @since 0.0.1
  */
 public class DashboardView extends GridPane {
 
@@ -20,8 +20,10 @@ public class DashboardView extends GridPane {
 		setPadding(new Insets(10));
 		setHgap(10);
 		setVgap(10);
+		// Temporary styling
 		setStyle("-fx-background-color: rgb(0, 0, 100);");
 
+		// Temporary layout
 		Label lblTitle = new Label("Dashboard");
 		lblTitle.setFont(new Font(30));
 		lblTitle.setStyle("-fx-text-fill: white;");
