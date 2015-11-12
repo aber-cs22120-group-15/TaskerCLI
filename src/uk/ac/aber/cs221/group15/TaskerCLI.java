@@ -1,7 +1,6 @@
 package uk.ac.aber.cs221.group15;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import uk.ac.aber.cs221.group15.gui.Login;
@@ -9,14 +8,17 @@ import uk.ac.aber.cs221.group15.gui.OverviewPane;
 
 /**
  * @author Darren White
- * @version 1.0
- * @since 1.0
+ * @version 0.0.1
+ * @since 0.0.1
  */
 public class TaskerCLI extends Application {
 
 	public static final String APP_NAME = "TaskerCLI";
 	public static final double APP_WIDTH = 800;
 	public static final double APP_HEIGHT = 600;
+
+	public static final String URL_PREFIX = "http://users.aber.ac.uk/dkm2/TaskerMAN/";
+	public static final String URL_METHOD = URL_PREFIX + "api.php?method=%s";
 
 	public static void main(String[] args) {
 		launch(args);
