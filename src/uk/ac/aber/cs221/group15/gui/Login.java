@@ -5,6 +5,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -20,7 +21,7 @@ import java.net.URL;
 
 /**
  * @author Darren White
- * @version 0.0.2
+ * @version 0.0.3
  * @since 0.0.1
  */
 public class Login extends Stage {
@@ -57,21 +58,32 @@ public class Login extends Stage {
 		grid.setPadding(new Insets(5));
 
 		Label lblTitle = new Label("Please sign in");
+		CheckBox cbRemember = new CheckBox("Remember me");
+		TextField txtEmail = new TextField();
+		PasswordField pwd = new PasswordField();
+		Button login = new Button("Sign in");
+
 		grid.add(lblTitle, 0, 0);
 
-		TextField txtEmail = new TextField();
 		txtEmail.setPromptText("Email address");
+		txtEmail.setOnKeyPressed(e -> {
+			if (e.getCode() == KeyCode.ENTER) {
+				pwd.requestFocus();
+			}
+		});
 		grid.add(txtEmail, 0, 1);
 
 		// Use password field for password
-		PasswordField pwd = new PasswordField();
 		pwd.setPromptText("Password");
+		pwd.setOnKeyPressed(e -> {
+			if (e.getCode() == KeyCode.ENTER) {
+				login(txtEmail.getText(), pwd.getText(), cbRemember.isSelected());
+			}
+		});
 		grid.add(pwd, 0, 2);
 
-		CheckBox cbRemember = new CheckBox("Remember me");
 		grid.add(cbRemember, 0, 3);
 
-		Button login = new Button("Sign in");
 		login.setOnAction(event -> login(txtEmail.getText(), pwd.getText(),
 				cbRemember.isSelected()));
 		login.setMaxWidth(WIDTH);
@@ -111,7 +123,8 @@ public class Login extends Stage {
 
 			// If the status is error, then display it
 			if (statusMsg.equals("error")) {
-				String errMsg = (String) obj.get("error");
+				JSONObject errorObj = (JSONObject) obj.get("error");
+				String errMsg = (String) errorObj.get("message");
 				statusProp.set(errMsg);
 				// Encountered an error, don't login
 				loggedIn = false;
