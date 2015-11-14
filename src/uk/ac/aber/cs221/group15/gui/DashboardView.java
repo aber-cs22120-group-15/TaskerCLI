@@ -9,15 +9,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.*;
+import javafx.scene.text.Font;
+import org.json.simple.parser.ParseException;
+import uk.ac.aber.cs221.group15.service.TaskService;
 import uk.ac.aber.cs221.group15.task.Task;
 
-import java.util.Calendar;
+import java.io.IOException;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 /**
  * This class is used to represent the Dashboard in the Overview
@@ -25,96 +24,113 @@ import java.util.GregorianCalendar;
  * upcoming tasks and a few major details
  *
  * @author Darren White
- * @version 0.0.2
- * @since 0.0.1
+ * @version 0.0.3
  */
 public class DashboardView extends GridPane {
 
 	/**
 	 * Defines the height for the four statistics panels
 	 */
-	public static final int STATISTICS_HEIGHT = 200;
+	private static final int STATISTICS_HEIGHT = 200;
+
+	/**
+	 * The service used to submit requests to list all tasks
+	 */
+	private static final TaskService service = new TaskService();
 
 	/**
 	 * Creates a new Dashboard
+	 *
+	 * @param token The token for the current user
 	 */
-	public DashboardView() {
-		init();
+	public DashboardView(String token) {
+		init(token);
 	}
 
 	/**
-	 * Initializes this view and all of its components
+	 * Creates a table to display tasks
+	 *
+	 * @return A new table to display tasks
 	 */
-	private void init() {
-		// Set padding & gaps to 10px
-		setPadding(new Insets(10));
-		setHgap(10);
-		setVgap(10);
-
-		// TODO Make cleaner (use inner class) and add support
-		// for a separate pane for statistics display
-		// Labels for the statistics
-		Label lblOutstanding = new Label("Outstanding Tasks");
-		Label lblOverdue = new Label("Overdue Tasks");
-		Label lblDist = new Label("Task Distribution");
-		Label lblComp = new Label("Completed On Time");
-
-		// Position the four labels at the bottom center
-		setHalignment(lblOutstanding, HPos.CENTER);
-		setValignment(lblOutstanding, VPos.BOTTOM);
-		setHalignment(lblOverdue, HPos.CENTER);
-		setValignment(lblOverdue, VPos.BOTTOM);
-		setHalignment(lblDist, HPos.CENTER);
-		setValignment(lblDist, VPos.BOTTOM);
-		setHalignment(lblComp, HPos.CENTER);
-		setValignment(lblComp, VPos.BOTTOM);
-
-		// Add the four labels to the first row, one in each column
-		add(lblOutstanding, 0, 0);
-		add(lblOverdue, 1, 0);
-		add(lblDist, 2, 0);
-		add(lblComp, 3, 0);
-
+	private TableView<Task> createTaskTable() {
 		// Create the task table for an overview of tasks
 		TableView<Task> table = new TableView<>();
 
 		// Create four columns: id, task, due date, and member
 		TableColumn<Task, Integer> idCol = new TableColumn<>("ID");
-		TableColumn<Task, String> taskCol = new TableColumn<>("Task");
+		TableColumn<Task, String> titleCol = new TableColumn<>("Task");
 		TableColumn<Task, Date> dueDateCol = new TableColumn<>("Due date");
-		TableColumn<Task, String> memberCol = new TableColumn<>("Member");
+		TableColumn<Task, String> creatorCol = new TableColumn<>("Member");
 
 		// Set each of the cell value factories (which fields they
 		// correspond to in the Task class)
 		idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
-		taskCol.setCellValueFactory(new PropertyValueFactory<>("title"));
-		dueDateCol.setCellValueFactory(new PropertyValueFactory<>("startDate"));
-		memberCol.setCellValueFactory(new PropertyValueFactory<>("member"));
+		titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
+		dueDateCol.setCellValueFactory(new PropertyValueFactory<>("dateDue"));
+		creatorCol.setCellValueFactory(new PropertyValueFactory<>("creator"));
+
+		// Set the column dyanmic sizes
+		// ID col - 10% width (- 2 so that the horizontal scrollbar doesn't show)
+		// Title col - 35% width
+		// Due date col - 30% width
+		// Creator name col - 25% width
+		idCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1).subtract(2));
+		titleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.35));
+		dueDateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
+		creatorCol.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
 
 		// Add the four columns to the table
 		table.getColumns().add(idCol);
-		table.getColumns().add(taskCol);
+		table.getColumns().add(titleCol);
 		table.getColumns().add(dueDateCol);
-		table.getColumns().add(memberCol);
+		table.getColumns().add(creatorCol);
 
-		// Remove the focus from the table - doesn't look nice
-		table.setFocusTraversable(false);
+		// Return the new table created
+		return table;
+	}
 
-		// The list of tasks in the overview - currently static
-		ObservableList<Task> tasks = FXCollections.observableArrayList();
+	/**
+	 * Initializes this view and all of its components
+	 *
+	 * @param token The token for the current user
+	 */
+	private void init(String token) {
+		// Set padding & gaps to 10px
+		setPadding(new Insets(10));
+		setHgap(10);
+		setVgap(10);
 
-		// Test task - remove later and add functionality to get tasks
-		// from the DB
-		tasks.add(new Task(1, "Continue work on TaskerCLI", "Darren",
-				new GregorianCalendar(2015, Calendar.NOVEMBER, 13).getTime(),
-				new GregorianCalendar(2015, Calendar.DECEMBER, 10).getTime()));
+		// Panes for the statistics
+		StatPane paneOutstanding = new StatPane("Outstanding Tasks");
+		StatPane paneOverdue = new StatPane("Overdue Tasks");
+		StatPane paneDist = new StatPane("Task Distribution");
+		StatPane paneComp = new StatPane("Completed On Time");
+
+		// Add the four panes to the first row, one in each column
+		add(paneOutstanding, 0, 0);
+		add(paneOverdue, 1, 0);
+		add(paneDist, 2, 0);
+		add(paneComp, 3, 0);
+
+		// Create the task table
+		TableView<Task> taskTable = createTaskTable();
+
+		// The list of tasks in the overview
+		ObservableList<Task> tasks = null;
+
+		try {
+			// Try and load the tasks from the database
+			tasks = FXCollections.observableArrayList(service.getTasks(token));
+		} catch (IOException | ParseException e) {
+			e.printStackTrace();
+		}
 
 		// Set the table items as the list we just created
-		table.setItems(tasks);
+		taskTable.setItems(tasks);
 
 		// Add the table to the second row (row 1), in the first column (col 0)
 		// and allow it to span all four columns and 1 row
-		add(table, 0, 1, 4, 1);
+		add(taskTable, 0, 1, 4, 1);
 
 		// Column 0 - for outstanding tasks (25% width)
 		ColumnConstraints cc0 = new ColumnConstraints();
@@ -146,5 +162,41 @@ public class DashboardView extends GridPane {
 
 		// Change the row sizes
 		getRowConstraints().addAll(rw0, rw1);
+	}
+
+	/**
+	 * A pane used to display statistical information for tasks
+	 */
+	private class StatPane extends GridPane {
+
+		/**
+		 * The label for the statistic
+		 */
+		private final Label lbl;
+
+		/**
+		 * Creates a new StatPane with the text label
+		 *
+		 * @param text The string for the label
+		 */
+		private StatPane(String text) {
+			// Create a label with the text
+			lbl = new Label(text);
+			lbl.setFont(new Font(16));
+
+			// Position the label at the bottom center
+			setHalignment(lbl, HPos.CENTER);
+			setValignment(lbl, VPos.BOTTOM);
+
+			// Add the label in the second row
+			add(lbl, 0, 1);
+
+			// TODO Replace pane with statistics information
+			// Temporary placeholder pane
+			StackPane pane = new StackPane();
+			setHgrow(pane, Priority.ALWAYS);
+			setVgrow(pane, Priority.ALWAYS);
+			add(pane, 0, 0);
+		}
 	}
 }

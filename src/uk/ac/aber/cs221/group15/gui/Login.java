@@ -6,92 +6,159 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import uk.ac.aber.cs221.group15.TaskerCLI;
+import uk.ac.aber.cs221.group15.service.LoginService;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 
 /**
+ * This class displays a Login window where
+ * the user can login to the main application
+ * with their email and password. An option to
+ * remember the user can also be selected so
+ * when the next time the application starts
+ * the previous email used is already entered
+ * to enable a faster login process
+ *
  * @author Darren White
- * @version 0.0.3
- * @since 0.0.1
+ * @version 0.0.4
  */
 public class Login extends Stage {
 
-	public static final String APP_NAME = "Login";
-	public static final double WIDTH = 300;
-	public static final double HEIGHT = 200;
+	/**
+	 * The title of the window
+	 */
+	private static final String APP_NAME = "Login";
 
+	/**
+	 * The main window width
+	 */
+	private static final double WIDTH = 300;
+
+	/**
+	 * The main window height
+	 */
+	private static final double HEIGHT = 200;
+
+	/**
+	 * The service used to submit login requests
+	 */
+	private static final LoginService service = new LoginService();
+
+	/**
+	 * Used to store the status
+	 */
 	private final SimpleStringProperty statusProp = new SimpleStringProperty();
-	private boolean loggedIn;
+
+	/**
+	 * Store the user token/key for further database requests
+	 */
 	private String token;
 
+	/**
+	 * Creates a new login window
+	 *
+	 * @param owner The main application
+	 */
 	public Login(Window owner) {
-		super();
-
+		// Set the owner as the main window
 		initOwner(owner);
+		// No need for the login to be resizable
 		setResizable(false);
+		// Set the title of the window
 		setTitle(APP_NAME);
 
+		// Initialize the components
 		init();
 	}
 
+	/**
+	 * Gets the user login token/key to be used
+	 * to get information from the database
+	 *
+	 * @return The user token/key
+	 */
 	public String getToken() {
 		return token;
 	}
 
+	/**
+	 * Initializes this windows components
+	 */
 	private void init() {
+		// Create the grid that we are going to
+		// put all the component onto
 		GridPane grid = new GridPane();
-		Scene scene = new Scene(grid, WIDTH, HEIGHT, Color.WHITE);
+		// Create the scene
+		Scene scene = new Scene(grid, WIDTH, HEIGHT);
 
+		// Center all components
 		grid.setAlignment(Pos.CENTER);
+		// Set the padding and gaps to 5px
 		grid.setHgap(5);
 		grid.setVgap(5);
 		grid.setPadding(new Insets(5));
 
+		// Create all the components: title label, email textfield,
+		// password field, checkbox to remember user, login button
+		// and the status label
 		Label lblTitle = new Label("Please sign in");
-		CheckBox cbRemember = new CheckBox("Remember me");
 		TextField txtEmail = new TextField();
 		PasswordField pwd = new PasswordField();
+		CheckBox cbRemember = new CheckBox("Remember me");
 		Button login = new Button("Sign in");
+		Label lblStatus = new Label();
 
-		grid.add(lblTitle, 0, 0);
+		// The title needs to stand out
+		lblTitle.setFont(new Font(20));
 
+		// Set the hint text (displayed when no text is input and no focus)
 		txtEmail.setPromptText("Email address");
+		// If the enter key is pressed proceed to input password
 		txtEmail.setOnKeyPressed(e -> {
+			// If the key pressed is enter
 			if (e.getCode() == KeyCode.ENTER) {
+				// Set the focus to the password field
 				pwd.requestFocus();
 			}
 		});
-		grid.add(txtEmail, 0, 1);
 
-		// Use password field for password
+		// Set the hint text
 		pwd.setPromptText("Password");
+		// If the enter key is pressed; login
 		pwd.setOnKeyPressed(e -> {
+			// If the enter key was pressed
 			if (e.getCode() == KeyCode.ENTER) {
+				// Request login with the user details
 				login(txtEmail.getText(), pwd.getText(), cbRemember.isSelected());
 			}
 		});
-		grid.add(pwd, 0, 2);
 
-		grid.add(cbRemember, 0, 3);
-
+		// If the login button is pressed, login
 		login.setOnAction(event -> login(txtEmail.getText(), pwd.getText(),
 				cbRemember.isSelected()));
+		// Make the login button stretch
 		login.setMaxWidth(WIDTH);
-		grid.add(login, 0, 4);
 
-		Label lblStatus = new Label();
+		// Set the status text to the statusProp field
+		// Whenever the statusProp value is changed this
+		// label will also change what it displays to the
+		// value of the statusProp
 		lblStatus.textProperty().bind(statusProp);
+		// The status displays any errors, so make it red
 		lblStatus.setStyle("-fx-text-fill: red;");
+
+		// Add each component to a new row (all in column 0)
+		grid.add(lblTitle, 0, 0);
+		grid.add(txtEmail, 0, 1);
+		grid.add(pwd, 0, 2);
+		grid.add(cbRemember, 0, 3);
+		grid.add(login, 0, 4);
 		grid.add(lblStatus, 0, 5);
 
 		// Set focus on the title label to begin with
@@ -99,56 +166,54 @@ public class Login extends Stage {
 		// Email and password is showing
 		lblTitle.requestFocus();
 
+		// Set the width of all components to 55% of the window width
+		ColumnConstraints cc0 = new ColumnConstraints();
+		cc0.setPercentWidth(55);
+
+		// Change the column size
+		grid.getColumnConstraints().add(cc0);
+
+		// Sets the scene
 		setScene(scene);
 	}
 
-	public boolean isLoggedIn() {
-		return loggedIn;
-	}
-
+	/**
+	 * Tries to login with the user details
+	 *
+	 * @param email    The email specified in the ui
+	 * @param pwd      The password specified in the ui
+	 * @param remember If the user is to be remembered for next time
+	 */
 	private void login(String email, String pwd, boolean remember) {
+		// TODO Implement the remember me feature - store the email for next time
+
 		try {
-			// Connect to the url request a login
-			URL url = new URL(String.format(TaskerCLI.URL_METHOD +
-					"&email=%s&password=%s", "login", email, pwd));
+			// Submit the email and password
+			// and store the token is successful (null if error)
+			token = service.login(email, pwd);
 
-			// Prepare to read the JSON output
-			JSONParser parser = new JSONParser();
-			// Parse it from the input stream of the url
-			InputStreamReader in = new InputStreamReader(url.openStream());
-			JSONObject obj = (JSONObject) parser.parse(in);
-
-			// The status object will inform us of the login process
-			String statusMsg = (String) obj.get("status");
-
-			// If the status is error, then display it
-			if (statusMsg.equals("error")) {
-				JSONObject errorObj = (JSONObject) obj.get("error");
-				String errMsg = (String) errorObj.get("message");
-				statusProp.set(errMsg);
-				// Encountered an error, don't login
-				loggedIn = false;
-			} else if (statusMsg.equals("success")) {
-				// Login was successful
-				// Get the response object
-				JSONObject response = (JSONObject) obj.get("response");
-				// Store the token which is used to retrieve
-				// user specific data
-				token = (String) response.get("key");
-				// We logged in successfully
-				loggedIn = true;
-				// Close the window as we are done
+			// We encountered an error
+			if (token == null) {
+				// We didn't login as there was an error
+				// Display the message
+				statusProp.set(service.getErrorMessage());
+			} else {
+				// We logged in, so close this window
 				close();
 			}
 		} catch (IOException e) {
 			// Manage the exceptions
 			e.printStackTrace();
 			statusProp.set("Cannot connect to server!");
-			loggedIn = false;
+			token = null;
 		} catch (ParseException e) {
-			statusProp.set("Cannot parse server data!");
-			loggedIn = false;
 			e.printStackTrace();
+			statusProp.set("Cannot parse server data!");
+			token = null;
+		} catch (Exception e) {
+			e.printStackTrace();
+			statusProp.set("An internal error occured!");
+			token = null;
 		}
 	}
 }

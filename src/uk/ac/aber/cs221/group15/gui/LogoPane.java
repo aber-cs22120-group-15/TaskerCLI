@@ -11,7 +11,6 @@ import javafx.scene.text.Font;
  *
  * @author Darren White
  * @version 0.0.2
- * @since 0.0.1
  */
 public class LogoPane extends StackPane {
 

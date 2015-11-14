@@ -10,20 +10,34 @@ import javafx.scene.layout.*;
  *
  * @author Darren White
  * @version 0.0.2
- * @since 0.0.1
  */
 public class OverviewPane extends GridPane {
 
 	/**
 	 * Represents the height of the logo/banner
 	 */
-	public static final int BANNER_HEIGHT = 125;
+	private static final int BANNER_HEIGHT = 125;
 
-	public OverviewPane() {
-		init();
+	/**
+	 * Represents the width of the navigation pane
+	 */
+	private static final int NAVIGATION_WIDTH = 150;
+
+	/**
+	 * Creates a new OverviewPane
+	 *
+	 * @param token The token for the current user
+	 */
+	public OverviewPane(String token) {
+		init(token);
 	}
 
-	private void init() {
+	/**
+	 * Initializes this pane and its components
+	 *
+	 * @param token The token for the current user
+	 */
+	private void init(String token) {
 		// Set padding & gaps to 0px
 		setPadding(new Insets(0));
 		setHgap(0);
@@ -38,13 +52,13 @@ public class OverviewPane extends GridPane {
 		add(stack, 1, 1);
 
 		// Used to navigate each view
-		NavigationPane nav = new NavigationPane(stack);
+		NavigationPane nav = new NavigationPane(stack, token);
 		add(nav, 0, 1);
 
 		// Column 0 - for navigation (fixed at 150px width)
 		ColumnConstraints cc0 = new ColumnConstraints();
-		cc0.setMinWidth(150);
-		cc0.setMaxWidth(150);
+		cc0.setMinWidth(NAVIGATION_WIDTH);
+		cc0.setMaxWidth(NAVIGATION_WIDTH);
 
 		// Column 1 - for overview (fill remaining width)
 		ColumnConstraints cc1 = new ColumnConstraints();

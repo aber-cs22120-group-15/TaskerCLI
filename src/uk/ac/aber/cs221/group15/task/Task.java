@@ -1,24 +1,47 @@
 package uk.ac.aber.cs221.group15.task;
 
+import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Represents a single task for a user. Each task has an id, title,
- * member (assigned by), start and end dates, status and a list of steps.
+ * creator (assigned by), start and end dates, status and a list of steps.
  * Both the status and steps can be set as completed. A Task can have many
  * steps.
  *
  * @author Darren White
  * @version 0.0.1
- * @since 0.0.1
  */
 public class Task {
 
 	/**
-	 * This tasks steps
+	 * Status for a task that has been abandoned.
 	 */
-	private final LinkedList<Step> steps = new LinkedList<>();
+	public static final int ABANDONED = 0;
+
+	/**
+	 * Status for a task that has been allocated. A user can set a Task as
+	 * being allocated if the Task status is currently COMPLETED and they
+	 * haven't actually completed the Task.
+	 */
+	public static final int ALLOCATED = 1;
+
+	/**
+	 * Status for a task that has been completed. A user can set a Task as
+	 * completed if and only if the current status of that Task is ALLOCATED.
+	 */
+	public static final int COMPLETED = 2;
+
+	/**
+	 * This tasks steps which the user can edit
+	 * We use a LinkedHashSet as it preserves the order
+	 * of Steps in the set.
+	 * <p>
+	 * TODO allow step comments to be added/edited/removed
+	 */
+	private final Set<Step> steps = new LinkedHashSet<>();
 
 	/**
 	 * The unique task id
@@ -31,36 +54,90 @@ public class Task {
 	private final String title;
 
 	/**
-	 * The member who assigned this task
+	 * The member who created this task
 	 */
-	private final String member;
+	private final String creator;
 
 	/**
-	 * Date task was started and expected completion date
+	 * Date task was created, expected completion date and
+	 * completition date
 	 */
-	private final Date startDate, endDate;
+	private final Date dateCreated, dateDue, dateCompleted;
 
 	/**
 	 * The current status of the task
 	 */
 	private int status;
-	// TODO add status constants
 
 	/**
 	 * Creates a new task with the given information
 	 *
-	 * @param id The task id
-	 * @param title The title of the task
-	 * @param member The member who assigned the task
-	 * @param startDate The date the task was assigned
-	 * @param endDate The expected completion date
+	 * @param id            The task id
+	 * @param title         The title of the task
+	 * @param creator       The member who created the task
+	 * @param dateCreated   The date the task was created
+	 * @param dateDue       The expected completion date
+	 * @param dateCompleted The date the task was completed
+	 * @param status        The current status of the task
 	 */
-	public Task(int id, String title, String member, Date startDate, Date endDate) {
+	public Task(int id, String title, String creator, Date dateCreated,
+	            Date dateDue, Date dateCompleted, int status) {
 		this.id = id;
 		this.title = title;
-		this.member = member;
-		this.startDate = startDate;
-		this.endDate = endDate;
+		this.creator = creator;
+		this.dateCreated = dateCreated;
+		this.dateDue = dateDue;
+		this.dateCompleted = dateCompleted;
+		this.status = status;
+	}
+
+	/**
+	 * Add a new step for this task - cannot have duplicates (same description)
+	 *
+	 * @param step The step to add
+	 * @return If the step was added
+	 */
+	public boolean addStep(Step step) {
+		return steps.add(step);
+	}
+
+	/**
+	 * Creates a new Step with the description and comment and adds it
+	 *
+	 * @param description The description of the step
+	 * @param comment     The step comment (or null if none)
+	 * @return If the step was added
+	 */
+	public boolean addStep(String description, String comment) {
+		// Create the step and add it
+		return steps.add(new Step(description, comment));
+	}
+
+	/**
+	 * Gets the member who created this task
+	 *
+	 * @return The member name
+	 */
+	public String getCreator() {
+		return creator;
+	}
+
+	/**
+	 * The date this task was completed
+	 *
+	 * @return The date this task was completed
+	 */
+	public Date getDateCompleted() {
+		return dateCompleted;
+	}
+
+	/**
+	 * The date this task was created
+	 *
+	 * @return The date this task was created
+	 */
+	public Date getDateCreated() {
+		return dateCreated;
 	}
 
 	/**
@@ -68,8 +145,8 @@ public class Task {
 	 *
 	 * @return The expected completion date
 	 */
-	public Date getEndDate() {
-		return endDate;
+	public Date getDateDue() {
+		return dateDue;
 	}
 
 	/**
@@ -82,40 +159,25 @@ public class Task {
 	}
 
 	/**
-	 * Gets the member who assigned this task
-	 *
-	 * @return The asignee
-	 */
-	public String getMember() {
-		return member;
-	}
-
-	/**
-	 * The date this task was assigned
-	 *
-	 * @return The date this task was started
-	 */
-	public Date getStartDate() {
-		return startDate;
-	}
-
-	/**
 	 * The current status of this task
 	 *
 	 * @return The current status
-	 * @see // TODO
+	 * @link Task.ABANDONED
+	 * @link Task.ALLOCATED
+	 * @link Task.COMPLETED
 	 */
 	public int getStatus() {
 		return status;
 	}
 
 	/**
-	 * Gets all the steps for this task
+	 * Gets all the steps for this task. Note: this
+	 * Set of steps return is unmodifiable.
 	 *
-	 * @return A list of steps (both completed and not)
+	 * @return A set of steps (both completed and not)
 	 */
-	public LinkedList<Step> getSteps() {
-		return steps;
+	public Set<Step> getSteps() {
+		return Collections.unmodifiableSet(steps);
 	}
 
 	/**
@@ -125,5 +187,20 @@ public class Task {
 	 */
 	public String getTitle() {
 		return title;
+	}
+
+	/**
+	 * Set the status for this task
+	 *
+	 * @param status The status to change this task to
+	 * @link Task.ALLOCATED
+	 * @link Task.COMPLETED
+	 */
+	public void setStatus(int status) {
+		if (status == ABANDONED) {
+			throw new IllegalArgumentException("Not allowed to set status as ABANDONED!");
+		}
+
+		this.status = status;
 	}
 }

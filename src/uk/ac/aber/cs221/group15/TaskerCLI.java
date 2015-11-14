@@ -13,34 +13,28 @@ import uk.ac.aber.cs221.group15.gui.OverviewPane;
  *
  * @author Darren White
  * @version 0.0.1
- * @since 0.0.1
  */
 public class TaskerCLI extends Application {
 
 	/**
-	 * The name of the application
+	 * The title of the application window
 	 */
 	public static final String APP_NAME = "TaskerCLI";
 
 	/**
+	 *
+	 */
+	public static final String APP_VERSION = "0.0.4";
+
+	/**
 	 * The main window width
 	 */
-	public static final double APP_WIDTH = 800;
+	private static final double APP_WIDTH = 800;
 
 	/**
 	 * The main window height
 	 */
-	public static final double APP_HEIGHT = 600;
-
-	/**
-	 * The base url of the database
-	 */
-	public static final String URL_PREFIX = "http://users.aber.ac.uk/dkm2/TaskerMAN/";
-
-	/**
-	 * The base api url with the method suffix (and %s for the method)
-	 */
-	public static final String URL_METHOD = URL_PREFIX + "api.php?method=%s";
+	private static final double APP_HEIGHT = 600;
 
 	/**
 	 * The main entry point
@@ -59,10 +53,13 @@ public class TaskerCLI extends Application {
 	 */
 	@Override
 	public void start(Stage stage) {
+		// Store the user unique token/key
+		String token;
+
 		// Begin login protocol
-		if (startLogin(stage)) {
+		if ((token = startLogin(stage)) != null) {
 			// Show the main overview window
-			startOverview(stage);
+			startOverview(stage, token);
 		}
 
 		// User did not login
@@ -73,9 +70,9 @@ public class TaskerCLI extends Application {
 	 * Displays the login window
 	 *
 	 * @param stage The primary stage to be used
-	 * @return If the user successfully logged in
+	 * @return The user token
 	 */
-	public static boolean startLogin(Stage stage) {
+	public static String startLogin(Stage stage) {
 		// Create login window
 		// Use primary stage as owner
 		Login login = new Login(stage);
@@ -85,7 +82,7 @@ public class TaskerCLI extends Application {
 		login.showAndWait();
 
 		// Return if we are logged in or not
-		return login.isLoggedIn();
+		return login.getToken();
 	}
 
 	/**
@@ -93,9 +90,9 @@ public class TaskerCLI extends Application {
 	 *
 	 * @param stage The primary stage
 	 */
-	public static void startOverview(Stage stage) {
+	public static void startOverview(Stage stage, String token) {
 		// Initialize and show main app
-		OverviewPane ovp = new OverviewPane();
+		OverviewPane ovp = new OverviewPane(token);
 		// Create a new scene with the default width & height
 		Scene scene = new Scene(ovp, APP_WIDTH, APP_HEIGHT);
 

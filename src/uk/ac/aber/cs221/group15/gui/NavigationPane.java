@@ -14,34 +14,35 @@ import uk.ac.aber.cs221.group15.TaskerCLI;
  *
  * @author Darren White
  * @version 0.0.2
- * @since 0.0.1
  */
 public class NavigationPane extends GridPane {
 
 	/**
 	 * The height for each navigation item
 	 */
-	public static final int NAV_ITEM_HEIGHT = 50;
+	private static final int NAV_ITEM_HEIGHT = 50;
 
 	/**
 	 * Creates a new navigation pane using the StackPane
 	 * to display the current view at index 0
 	 *
 	 * @param stack The StackPane to display the current view
+	 * @param token The token for the current user
 	 */
-	public NavigationPane(StackPane stack) {
-		init(stack);
+	public NavigationPane(StackPane stack, String token) {
+		init(stack, token);
 	}
 
 	/**
 	 * Initialize this pane and its components
 	 *
 	 * @param stack The StackPane to display the current view
+	 * @param token The token for the current user
 	 */
-	private void init(StackPane stack) {
+	private void init(StackPane stack, String token) {
 		// Initialize the different views
-		DashboardView db = new DashboardView();
-		TasksView tasks = new TasksView();
+		DashboardView db = new DashboardView(token);
+		TaskView tasks = new TaskView(token);
 
 		// Set padding and gaps to 0px
 		setPadding(new Insets(0, 0, 0, 0));
@@ -111,11 +112,13 @@ public class NavigationPane extends GridPane {
 
 		// Create new stage to restart
 		Stage stage = new Stage();
+		// Store the user unique token/key
+		String token;
 		// Show login again
-		if (TaskerCLI.startLogin(stage)) {
+		if ((token = TaskerCLI.startLogin(stage)) != null) {
 			// If we are logged in
 			// Display main window again
-			TaskerCLI.startOverview(stage);
+			TaskerCLI.startOverview(stage, token);
 		}
 
 		// Application will exit automatically
@@ -130,8 +133,8 @@ public class NavigationPane extends GridPane {
 	 * Sets the current view on the StackPane at index 0
 	 *
 	 * @param navPane The NavPane which is to be clicked
-	 * @param stack The StackPane to display the view
-	 * @param view The view to display
+	 * @param stack   The StackPane to display the view
+	 * @param view    The view to display
 	 */
 	private void setCurrentView(NavPane navPane, StackPane stack, Pane view) {
 		// Set all NavPane styles as unselected
@@ -157,10 +160,15 @@ public class NavigationPane extends GridPane {
 	 */
 	private static class NavPane extends StackPane {
 
-		// The label to display a descriptive title
+		/**
+		 * The label to display a descriptive title
+		 */
 		private final Label lbl;
-		// Useful variables to test if the navpane
-		// is the current view or is being hovered (by the mouse)
+
+		/**
+		 * Useful variables to test if the navpane
+		 * is the current view or is being hovered (by the mouse)
+		 */
 		private boolean selected, hover;
 
 		/**
@@ -186,20 +194,6 @@ public class NavigationPane extends GridPane {
 		}
 
 		/**
-		 * Used when the mouse exits this pane
-		 * Sets the style as unselected
-		 */
-		private void exit() {
-			// Only unselect if it isn't the current view
-			if (!selected) {
-				unselect();
-			}
-
-			// Mouse has exited, so we are not hovering
-			hover = false;
-		}
-
-		/**
 		 * Used when the mouse enters this pane
 		 * Sets the style as selected
 		 */
@@ -211,6 +205,20 @@ public class NavigationPane extends GridPane {
 
 			// Mouse entered, we are hovering
 			hover = true;
+		}
+
+		/**
+		 * Used when the mouse exits this pane
+		 * Sets the style as unselected
+		 */
+		private void exit() {
+			// Only unselect if it isn't the current view
+			if (!selected) {
+				unselect();
+			}
+
+			// Mouse has exited, so we are not hovering
+			hover = false;
 		}
 
 		/**

@@ -17,14 +17,15 @@ import javafx.scene.text.Font;
  *
  * @author Darren White
  * @version 0.0.1
- * @since 0.0.1
  */
-public class TasksView extends GridPane {
+public class TaskView extends GridPane {
 
 	/**
 	 * Creates a new task view
+	 *
+	 * @param token The token for the current user
 	 */
-	public TasksView() {
+	public TaskView(String token) {
 		init();
 	}
 
