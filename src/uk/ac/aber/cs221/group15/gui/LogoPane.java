@@ -7,27 +7,37 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 
 /**
+ * This class will display a banner/logo for the client
+ *
  * @author Darren White
- * @version 0.0.1
+ * @version 0.0.2
  * @since 0.0.1
  */
 public class LogoPane extends StackPane {
 
+	/**
+	 * Creates a new logo pane
+	 */
 	public LogoPane() {
 		init();
 	}
 
+	/**
+	 * Initialize this pane and its components
+	 */
 	private void init() {
+		// Set padding to 10px
 		setPadding(new Insets(10));
 
 		// TODO Add logo imageview
-		// Temporary layout and styling
-		Label tmp = new Label("Banner image placeholder");
-		tmp.setFont(new Font(50));
-		tmp.setStyle("-fx-text-fill: white;");
+		// Use a temporary placeholder and add it to this pane
+		Label tmp = new Label("TaskerCLI");
+		tmp.setFont(new Font(20));
+		tmp.setStyle("-fx-text-fill: rgb(40, 140, 255);");
 		getChildren().add(tmp);
 
-		setAlignment(tmp, Pos.TOP_LEFT);
-		setStyle("-fx-background-color: black;");
+		// Center the label and set its color
+		setAlignment(tmp, Pos.CENTER);
+		setStyle("-fx-background-color: rgb(40, 40, 40);");
 	}
 }
