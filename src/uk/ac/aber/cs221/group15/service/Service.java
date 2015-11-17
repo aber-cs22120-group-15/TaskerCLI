@@ -29,12 +29,12 @@ public abstract class Service {
 	/**
 	 * The base url of the database
 	 */
-	private static final String URL_BASE = "http://users.aber.ac.uk/dkm2/TaskerMAN/";
+	protected static final String URL_BASE = "http://users.aber.ac.uk/dkm2/TaskerMAN/";
 
 	/**
 	 * The base api url with the method suffix (and %s for the method)
 	 */
-	private static final String URL_METHOD_TEMPLATE = URL_BASE + "api.php?method=%s";
+	protected static final String URL_METHOD_TEMPLATE = URL_BASE + "api.php?method=%s";
 
 	/**
 	 * The key attribute to get the error object
@@ -72,17 +72,6 @@ public abstract class Service {
 	private JSONObject result;
 
 	/**
-	 * Creates the base url using the method template and the method name
-	 *
-	 * @return The base url to retrieve the JSON results from
-	 */
-	protected String getBaseURL() {
-		// Format the method template first and then
-		// concatenate the formatted arguments string
-		return String.format(Service.URL_METHOD_TEMPLATE, getMethodName());
-	}
-
-	/**
 	 * Gets the error message if there is one. May return
 	 * null if the status is not the error status or if
 	 * submit has not been called
@@ -101,14 +90,6 @@ public abstract class Service {
 		// Return the error message if there is one
 		return errObj != null ? (String) errObj.get(KEY_ERROR_MESSAGE) : null;
 	}
-
-	/**
-	 * The name of the method to submit in the
-	 * method template url (...?method=%s)
-	 *
-	 * @return The method for the url
-	 */
-	public abstract String getMethodName();
 
 	/**
 	 * The response object if there is one. May return null

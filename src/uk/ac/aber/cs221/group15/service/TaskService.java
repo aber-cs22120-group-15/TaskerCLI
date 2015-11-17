@@ -3,6 +3,7 @@ package uk.ac.aber.cs221.group15.service;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+import uk.ac.aber.cs221.group15.task.Step;
 import uk.ac.aber.cs221.group15.task.Task;
 
 import java.io.IOException;
@@ -16,14 +17,27 @@ import java.util.Set;
  * to get all tasks for a user using the unique token
  *
  * @author Darren White
- * @version 0.0.1
+ * @version 0.0.2
  */
 public class TaskService extends Service {
 
 	/**
-	 * The method to submit in the final url
+	 * The method to submit in the final url to list
+	 * all the users tasks
 	 */
-	private static final String METHOD_NAME = "list_tasks";
+	private static final String METHOD_LIST_TASKS = "list_tasks";
+
+	/**
+	 * The method to submit in the final url to
+	 * list a tasks' steps
+	 */
+	private static final String METHOD_LIST_TASK_STEPS = "list_tasks";
+
+	/**
+	 * The method to submit in the final url to
+	 * set a task step comment
+	 */
+	private static final String METHOD_SET_COMMENT = "set_task_step_comment";
 
 	/**
 	 * The extra arguments needed for the method to submit.
@@ -82,11 +96,18 @@ public class TaskService extends Service {
 			new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
 	/**
-	 * {@inheritDoc}
+	 * Gets the steps for a specific task using the
+	 * user token and the task id
+	 *
+	 * @param token The token for the current user
+	 * @param id    The unique id for the task
+	 * @return The steps associated with the task with the id
 	 */
-	@Override
-	public String getMethodName() {
-		return METHOD_NAME;
+	public Set<Step> getTaskSteps(String token, int id) {
+		Set<Step> steps = new LinkedHashSet<>();
+		// TODO
+
+		return steps;
 	}
 
 	/**
@@ -102,8 +123,9 @@ public class TaskService extends Service {
 		// Use a LinkedHashSet so no duplicates are added
 		// and ordering is preserved
 		Set<Task> tasks = new LinkedHashSet<>();
-		// Create the final url with the token
-		String url = getBaseURL() + String.format(METHOD_ARGUMENTS, token);
+		// Create the url to submit with the method, and token
+		String url = String.format(URL_METHOD_TEMPLATE, METHOD_LIST_TASKS) +
+				String.format(METHOD_ARGUMENTS, token);
 		// Submit the request along with the token
 		int status = submit(url);
 
@@ -173,5 +195,17 @@ public class TaskService extends Service {
 		// Create the task and return it
 		return new Task(id, title, creator, dateCreated, dateDue,
 				dateCompleted, status);
+	}
+
+	/**
+	 * Sets a tasks comment using the user token and the
+	 * task step id
+	 *
+	 * @param token   The token for the current user
+	 * @param id      The unique id for the task step
+	 * @param comment The comment to set for the task step
+	 */
+	public void setTaskStepComment(String token, int id, String comment) {
+		// TODO
 	}
 }

@@ -38,8 +38,6 @@ public class Task {
 	 * This tasks steps which the user can edit
 	 * We use a LinkedHashSet as it preserves the order
 	 * of Steps in the set.
-	 * <p>
-	 * TODO allow step comments to be added/edited/removed
 	 */
 	private final Set<Step> steps = new LinkedHashSet<>();
 
@@ -104,13 +102,14 @@ public class Task {
 	/**
 	 * Creates a new Step with the description and comment and adds it
 	 *
+	 * @param id The unique id of the step
 	 * @param description The description of the step
 	 * @param comment     The step comment (or null if none)
 	 * @return If the step was added
 	 */
-	public boolean addStep(String description, String comment) {
+	public boolean addStep(int id, String description, String comment) {
 		// Create the step and add it
-		return steps.add(new Step(description, comment));
+		return steps.add(new Step(id, description, comment));
 	}
 
 	/**

@@ -30,14 +30,6 @@ public class LoginService extends Service {
 	private static final String KEY_TOKEN = "key";
 
 	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String getMethodName() {
-		return METHOD_NAME;
-	}
-
-	/**
 	 * Gets the user token for future database requests
 	 *
 	 * @return The unique token/key for the user
@@ -65,8 +57,8 @@ public class LoginService extends Service {
 	 * @see Service
 	 */
 	public String login(String email, String pwd) throws IOException, ParseException {
-		// Create the final url with the email and password
-		String url = getBaseURL() + String.format(METHOD_ARGUMENTS, email, pwd);
+		// Create the final url with the method, email, and password
+		String url = String.format(URL_METHOD_TEMPLATE, METHOD_NAME) + String.format(METHOD_ARGUMENTS, email, pwd);
 		// Submit the email and password
 		submit(url);
 

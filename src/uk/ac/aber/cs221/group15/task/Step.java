@@ -12,23 +12,27 @@ package uk.ac.aber.cs221.group15.task;
 public class Step {
 
 	/**
+	 * The unique id for this task step
+	 */
+	private final int id;
+	/**
 	 * The description of the task step
 	 */
 	private final String description;
-
 	/**
 	 * The user comment for the task step
 	 */
 	private String comment;
 
 	/**
-	 * Creates a new step with the description and
+	 * Creates a new step with the id, description and
 	 * the user comment if it exists
 	 *
 	 * @param description The description of the task step
 	 * @param comment     The user comment of the task step
 	 */
-	public Step(String description, String comment) {
+	public Step(int id, String description, String comment) {
+		this.id = id;
 		this.description = description;
 		this.comment = comment;
 	}
@@ -59,6 +63,15 @@ public class Step {
 	 */
 	public String getDescription() {
 		return description;
+	}
+
+	/**
+	 * Gets this step unique id
+	 *
+	 * @return The step id
+	 */
+	public int getId() {
+		return id;
 	}
 
 	/**
