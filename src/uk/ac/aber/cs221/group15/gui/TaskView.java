@@ -39,18 +39,17 @@ public class TaskView extends GridPane {
 		setVgap(10);
 
 		// TODO Add main components with functionality
-		/*
-		Use this code below to display the task details
-
-		TaskDetail taskDetail = new TaskDetail(getScene().getWindow(), task);
-		taskDetail.sizeToScene();
-		taskDetail.showAndWait();
-		 */
 
 		// Create a temporary placeholder in the center
 		Label lblTitle = new Label("Tasks");
 		lblTitle.setFont(new Font(20));
 		lblTitle.setStyle("-fx-text-fill: black;");
+		lblTitle.setOnMouseClicked(e -> {
+			// Use this code below to display the task details
+			TaskDetail taskDetail = new TaskDetail(getScene().getWindow(), null);
+			taskDetail.sizeToScene();
+			taskDetail.showAndWait();
+		});
 
 		setHalignment(lblTitle, HPos.CENTER);
 		setValignment(lblTitle, VPos.CENTER);
