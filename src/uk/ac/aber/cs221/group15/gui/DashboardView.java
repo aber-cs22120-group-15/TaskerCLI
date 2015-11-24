@@ -118,7 +118,11 @@ public class DashboardView extends GridPane {
 
 			@Override
 			public String getValue() {
-				return Integer.toString(tasks.size());
+				Date now = new GregorianCalendar().getTime();
+				int outstanding = tasks.filtered(t -> t.getDateDue().compareTo(now) > 0 &&
+						t.getStatus() == Task.ALLOCATED).size();
+
+				return Integer.toString(outstanding);
 			}
 		});
 		StatPane paneOverdue = new StatPane("Overdue Tasks", new ObservableValueBase<String>() {

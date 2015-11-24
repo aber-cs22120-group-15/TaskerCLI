@@ -102,7 +102,7 @@ public class Task {
 	/**
 	 * Creates a new Step with the description and comment and adds it
 	 *
-	 * @param id The unique id of the step
+	 * @param id          The unique id of the step
 	 * @param description The description of the step
 	 * @param comment     The step comment (or null if none)
 	 * @return If the step was added
