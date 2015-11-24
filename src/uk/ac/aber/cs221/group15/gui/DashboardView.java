@@ -1,5 +1,7 @@
 package uk.ac.aber.cs221.group15.gui;
 
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.ObservableValueBase;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
@@ -17,6 +19,7 @@ import uk.ac.aber.cs221.group15.task.Task;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * This class is used to represent the Dashboard in the Overview
@@ -24,7 +27,7 @@ import java.util.Date;
  * upcoming tasks and a few major details
  *
  * @author Darren White
- * @version 0.0.3
+ * @version 0.0.4
  */
 public class DashboardView extends GridPane {
 
@@ -52,9 +55,9 @@ public class DashboardView extends GridPane {
 	 *
 	 * @return A new table to display tasks
 	 */
-	private TableView<Task> createTaskTable() {
+	private TableView<Task> createTaskTable(ObservableList<Task> tasks) {
 		// Create the task table for an overview of tasks
-		TableView<Task> table = new TableView<>();
+		TableView<Task> table = new TableView<>(tasks);
 
 		// Create four columns: id, task, due date, and member
 		TableColumn<Task, Integer> idCol = new TableColumn<>("ID");
@@ -100,56 +103,57 @@ public class DashboardView extends GridPane {
 		setHgap(10);
 		setVgap(10);
 
-		// Panes for the statistics
-		StatPane paneOutstanding = new StatPane("Outstanding Tasks");
-		StatPane paneOverdue = new StatPane("Overdue Tasks");
-		StatPane paneDist = new StatPane("Task Distribution");
-		StatPane paneComp = new StatPane("Completed On Time");
-
-		// Add the four panes to the first row, one in each column
-		add(paneOutstanding, 0, 0);
-		add(paneOverdue, 1, 0);
-		add(paneDist, 2, 0);
-		add(paneComp, 3, 0);
-
-		// Create the task table
-		TableView<Task> taskTable = createTaskTable();
-
 		// The list of tasks in the overview
-		ObservableList<Task> tasks = null;
+		ObservableList<Task> tasks = FXCollections.observableArrayList();
 
 		try {
 			// Try and load the tasks from the database
-			tasks = FXCollections.observableArrayList(service.getTasks(token));
+			tasks.addAll(service.getTasks(token));
 		} catch (IOException | ParseException e) {
 			e.printStackTrace();
 		}
 
-		// Set the table items as the list we just created
-		taskTable.setItems(tasks);
+		// Panes for the statistics
+		StatPane paneOutstanding = new StatPane("Outstanding Tasks", new ObservableValueBase<String>() {
+
+			@Override
+			public String getValue() {
+				return Integer.toString(tasks.size());
+			}
+		});
+		StatPane paneOverdue = new StatPane("Overdue Tasks", new ObservableValueBase<String>() {
+
+			@Override
+			public String getValue() {
+				Date now = new GregorianCalendar().getTime();
+				int overdue = tasks.filtered(t -> t.getDateDue().compareTo(now) < 0).size();
+
+				return Integer.toString(overdue);
+			}
+		});
+
+		// Add the four panes to the first row, one in each column
+		add(paneOutstanding, 0, 0);
+		add(paneOverdue, 1, 0);
+
+		// Create the task table and set the items as the list loaded
+		// from the database
+		TableView<Task> taskTable = createTaskTable(tasks);
 
 		// Add the table to the second row (row 1), in the first column (col 0)
 		// and allow it to span all four columns and 1 row
 		add(taskTable, 0, 1, 4, 1);
 
-		// Column 0 - for outstanding tasks (25% width)
+		// Column 0 - for outstanding tasks (50% width)
 		ColumnConstraints cc0 = new ColumnConstraints();
-		cc0.setPercentWidth(25);
+		cc0.setPercentWidth(50);
 
-		// Column 1 - for overdue tasks (25% width)
+		// Column 1 - for overdue tasks (50% width)
 		ColumnConstraints cc1 = new ColumnConstraints();
-		cc1.setPercentWidth(25);
-
-		// Column 2 - for task distribution (25% width)
-		ColumnConstraints cc2 = new ColumnConstraints();
-		cc2.setPercentWidth(25);
-
-		// Column 3 - for completed on time (25% width)
-		ColumnConstraints cc3 = new ColumnConstraints();
-		cc3.setPercentWidth(25);
+		cc1.setPercentWidth(50);
 
 		// Change the column sizes
-		getColumnConstraints().addAll(cc0, cc1, cc2, cc3);
+		getColumnConstraints().addAll(cc0, cc1);
 
 		// Row 0 - The four statistic panels (fixed width)
 		RowConstraints rw0 = new RowConstraints();
@@ -170,33 +174,51 @@ public class DashboardView extends GridPane {
 	private class StatPane extends GridPane {
 
 		/**
-		 * The label for the statistic
+		 * The label for the caption
 		 */
-		private final Label lbl;
+		private final Label lblCap;
 
 		/**
-		 * Creates a new StatPane with the text label
-		 *
-		 * @param text The string for the label
+		 * The label for the statistic
 		 */
-		private StatPane(String text) {
-			// Create a label with the text
-			lbl = new Label(text);
-			lbl.setFont(new Font(16));
+		private final Label lblStat;
 
-			// Position the label at the bottom center
-			setHalignment(lbl, HPos.CENTER);
-			setValignment(lbl, VPos.BOTTOM);
+		/**
+		 * Creates a new StatPane with a caption and a statistic
+		 *
+		 * @param caption The caption for the stat
+		 */
+		private StatPane(String caption, ObservableValue<? extends String> stat) {
+			// Create a label for the caption
+			lblCap = new Label(caption);
+			lblCap.setFont(new Font(16));
 
-			// Add the label in the second row
-			add(lbl, 0, 1);
+			// Create the stat label and bind the stat value to it
+			lblStat = new Label();
+			lblStat.setFont(new Font(72));
+			if (stat != null) {
+				lblStat.textProperty().bind(stat);
+			}
 
-			// TODO Replace pane with statistics information
-			// Temporary placeholder pane
+			// Make a placeholder for the stat
 			StackPane pane = new StackPane();
+
+			// Make it fill the pane
 			setHgrow(pane, Priority.ALWAYS);
 			setVgrow(pane, Priority.ALWAYS);
+
+			// Add the stat to the placeholder
+			pane.getChildren().add(lblStat);
+
+			// Add the statistic placeholder
 			add(pane, 0, 0);
+
+			// Position the caption at the bottom center
+			setHalignment(lblCap, HPos.CENTER);
+			setValignment(lblCap, VPos.BOTTOM);
+
+			// Add the caption in the second row
+			add(lblCap, 0, 1);
 		}
 	}
 }

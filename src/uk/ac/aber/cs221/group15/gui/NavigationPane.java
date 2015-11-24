@@ -13,7 +13,7 @@ import uk.ac.aber.cs221.group15.TaskerCLI;
  * where the current view will be at index 0 of the StackPane
  *
  * @author Darren White
- * @version 0.0.2
+ * @version 0.0.3
  */
 public class NavigationPane extends GridPane {
 
@@ -53,19 +53,19 @@ public class NavigationPane extends GridPane {
 		setStyle("-fx-background-color: rgb(230, 230, 230);");
 
 		// The navigation link to the Dashboard view
-		NavPane paneDb = new NavPane("Dashboard");
+		NavButton paneDb = new NavButton("Dashboard");
 		// Mouse EventHandler for on click to change the view to the dashboard
 		paneDb.setOnMouseClicked(e -> setCurrentView(paneDb, stack, db));
 		add(paneDb, 0, 0);
 
 		// The navigation link to the Tasks view
-		NavPane paneTasks = new NavPane("Tasks");
+		NavButton paneTasks = new NavButton("Tasks");
 		// Mouse EventHandle for the tasks view
 		paneTasks.setOnMouseClicked(e -> setCurrentView(paneTasks, stack, tasks));
 		add(paneTasks, 0, 1);
 
 		// The logout button (label in this case)
-		NavPane paneLogout = new NavPane("Logout");
+		NavButton paneLogout = new NavButton("Logout");
 		// Logout on click
 		paneLogout.setOnMouseClicked(e -> logout());
 		add(paneLogout, 0, 2);
@@ -132,19 +132,19 @@ public class NavigationPane extends GridPane {
 	/**
 	 * Sets the current view on the StackPane at index 0
 	 *
-	 * @param navPane The NavPane which is to be clicked
-	 * @param stack   The StackPane to display the view
-	 * @param view    The view to display
+	 * @param navBtn The NavButton which is to be clicked
+	 * @param stack  The StackPane to display the view
+	 * @param view   The view to display
 	 */
-	private void setCurrentView(NavPane navPane, StackPane stack, Pane view) {
-		// Set all NavPane styles as unselected
-		getChildren().stream().filter(n -> n instanceof NavPane).forEach(n -> {
-			NavPane pane = (NavPane) n;
+	private void setCurrentView(NavButton navBtn, StackPane stack, Pane view) {
+		// Set all NavButton styles as unselected
+		getChildren().stream().filter(n -> n instanceof NavButton).forEach(n -> {
+			NavButton pane = (NavButton) n;
 			pane.unselect();
 		});
 
-		// Set the navPane style as selected
-		navPane.select();
+		// Set the NavButton style as selected
+		navBtn.select();
 
 		// If there is no current view, add it
 		if (stack.getChildren().isEmpty()) {
@@ -158,7 +158,7 @@ public class NavigationPane extends GridPane {
 	/**
 	 * Used as a navigation button/pane
 	 */
-	private static class NavPane extends StackPane {
+	private static class NavButton extends StackPane {
 
 		/**
 		 * The label to display a descriptive title
@@ -166,17 +166,17 @@ public class NavigationPane extends GridPane {
 		private final Label lbl;
 
 		/**
-		 * Useful variables to test if the navpane
+		 * Useful variables to test if the NavButton
 		 * is the current view or is being hovered (by the mouse)
 		 */
 		private boolean selected, hover;
 
 		/**
-		 * Creates a new unselected NavPane with a label
+		 * Creates a new unselected NavButton with a label
 		 *
 		 * @param text The text to use for the label
 		 */
-		private NavPane(String text) {
+		private NavButton(String text) {
 			// Create a label with the font size
 			lbl = new Label(text);
 			lbl.setFont(new Font(16));
