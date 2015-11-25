@@ -1,7 +1,6 @@
 package uk.ac.aber.cs221.group15.gui;
 
-import javafx.beans.value.ObservableValue;
-import javafx.beans.value.ObservableValueBase;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
@@ -12,14 +11,18 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import org.json.simple.parser.ParseException;
 import uk.ac.aber.cs221.group15.service.TaskService;
 import uk.ac.aber.cs221.group15.task.Task;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * This class is used to represent the Dashboard in the Overview
@@ -27,14 +30,14 @@ import java.util.GregorianCalendar;
  * upcoming tasks and a few major details
  *
  * @author Darren White
- * @version 0.0.4
+ * @version 0.0.5
  */
 public class DashboardView extends GridPane {
 
 	/**
 	 * Defines the height for the four statistics panels
 	 */
-	private static final int STATISTICS_HEIGHT = 200;
+	private static final int STATISTICS_HEIGHT = 115;
 
 	/**
 	 * The service used to submit requests to list all tasks
@@ -48,6 +51,54 @@ public class DashboardView extends GridPane {
 	 */
 	public DashboardView(String token) {
 		init(token);
+	}
+
+	private List<StatPane> createStatPanes(ObservableList<Task> tasks) {
+		List<StatPane> panes = new ArrayList<>();
+
+		// The outstanding tasks statistic
+		Callable<Integer> outstandingTasks = () -> {
+			// The current date
+			Date now = new GregorianCalendar().getTime();
+			// Filter tasks to dates in future and the task status is allocated
+			return tasks.filtered(t -> t.getDateDue().compareTo(now) > 0 &&
+					t.getStatus() == Task.ALLOCATED).size();
+		};
+		Callable<Paint> outstandingColor = () -> {
+			int stat = outstandingTasks.call();
+
+			if (stat == 0) {
+				return Color.GREEN;
+			} else if (stat < 10) {
+				return Color.ORANGE;
+			} else {
+				return Color.RED;
+			}
+		};
+
+		panes.add(new StatPane("Outstanding Tasks", outstandingTasks,
+				outstandingColor, tasks));
+
+		Callable<Integer> overdueTasks = () -> {
+			// The current date
+			Date now = new GregorianCalendar().getTime();
+			// Filter tasks to dates in past
+			return tasks.filtered(t -> t.getDateDue().compareTo(now) < 0).size();
+		};
+		Callable<Paint> overdueColor = () -> {
+			int stat = overdueTasks.call();
+
+			if (stat == 0) {
+				return Color.GREEN;
+			} else {
+				return Color.RED;
+			}
+		};
+
+		// The overdue tasks statistic
+		panes.add(new StatPane("Overdue Tasks", overdueTasks, overdueColor, tasks));
+
+		return panes;
 	}
 
 	/**
@@ -73,12 +124,12 @@ public class DashboardView extends GridPane {
 		creatorCol.setCellValueFactory(new PropertyValueFactory<>("creator"));
 
 		// Set the column dyanmic sizes
-		// ID col - 10% width (- 2 so that the horizontal scrollbar doesn't show)
-		// Title col - 35% width
+		// ID col - 5% width (- 2 so that the horizontal scrollbar doesn't show)
+		// Title col - 40% width
 		// Due date col - 30% width
 		// Creator name col - 25% width
-		idCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1).subtract(2));
-		titleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.35));
+		idCol.prefWidthProperty().bind(table.widthProperty().multiply(0.05).subtract(2));
+		titleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
 		dueDateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
 		creatorCol.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
 
@@ -98,6 +149,8 @@ public class DashboardView extends GridPane {
 	 * @param token The token for the current user
 	 */
 	private void init(String token) {
+		// Set the id for css
+		setId("db-view");
 		// Set padding & gaps to 10px
 		setPadding(new Insets(10));
 		setHgap(10);
@@ -113,35 +166,15 @@ public class DashboardView extends GridPane {
 			e.printStackTrace();
 		}
 
-		// Panes for the statistics
-		StatPane paneOutstanding = new StatPane("Outstanding Tasks", new ObservableValueBase<String>() {
+		// Creates the panes for the statistics
+		List<StatPane> panes = createStatPanes(tasks);
 
-			@Override
-			public String getValue() {
-				Date now = new GregorianCalendar().getTime();
-				int outstanding = tasks.filtered(t -> t.getDateDue().compareTo(now) > 0 &&
-						t.getStatus() == Task.ALLOCATED).size();
+		// Add the panes to the first row, one in each column
+		for (int i = 0; i < panes.size(); i++) {
+			add(panes.get(i), i, 0);
+		}
 
-				return Integer.toString(outstanding);
-			}
-		});
-		StatPane paneOverdue = new StatPane("Overdue Tasks", new ObservableValueBase<String>() {
-
-			@Override
-			public String getValue() {
-				Date now = new GregorianCalendar().getTime();
-				int overdue = tasks.filtered(t -> t.getDateDue().compareTo(now) < 0).size();
-
-				return Integer.toString(overdue);
-			}
-		});
-
-		// Add the four panes to the first row, one in each column
-		add(paneOutstanding, 0, 0);
-		add(paneOverdue, 1, 0);
-
-		// Create the task table and set the items as the list loaded
-		// from the database
+		// Create the task table
 		TableView<Task> taskTable = createTaskTable(tasks);
 
 		// Add the table to the second row (row 1), in the first column (col 0)
@@ -190,26 +223,36 @@ public class DashboardView extends GridPane {
 		/**
 		 * Creates a new StatPane with a caption and a statistic
 		 *
-		 * @param caption The caption for the stat
+		 * @param caption   The caption for the stat
+		 * @param statFunc  A function used to get the statistic value
+		 * @param colorFunc A function used to get the statistic color
+		 * @param tasks     The tasks list to bind to
 		 */
-		private StatPane(String caption, ObservableValue<? extends String> stat) {
+		private StatPane(String caption, Callable<Integer> statFunc,
+		                 Callable<Paint> colorFunc, ObservableList<Task> tasks) {
+			// Add the styleclass for css
+			getStyleClass().add("stat-pane");
 			// Create a label for the caption
 			lblCap = new Label(caption);
-			lblCap.setFont(new Font(16));
+			// Add the styleclass for css
+			lblCap.getStyleClass().add("caption");
 
 			// Create the stat label and bind the stat value to it
 			lblStat = new Label();
-			lblStat.setFont(new Font(72));
-			if (stat != null) {
-				lblStat.textProperty().bind(stat);
-			}
+			// Add the styleclass for css
+			lblStat.getStyleClass().add("statistic");
+			// Bind the stat value as the callable value with the tasks
+			// list as a dependency
+			lblStat.textProperty().bind(Bindings.format("%d", Bindings.createIntegerBinding(statFunc, tasks)));
+			// Bind the stat color callable function with tasks as dependency
+			lblStat.textFillProperty().bind(Bindings.createObjectBinding(colorFunc, tasks));
 
 			// Make a placeholder for the stat
 			StackPane pane = new StackPane();
 
 			// Make it fill the pane
 			setHgrow(pane, Priority.ALWAYS);
-			setVgrow(pane, Priority.ALWAYS);
+			setVgrow(pane, Priority.NEVER);
 
 			// Add the stat to the placeholder
 			pane.getChildren().add(lblStat);

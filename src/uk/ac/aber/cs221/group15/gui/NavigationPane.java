@@ -1,10 +1,8 @@
 package uk.ac.aber.cs221.group15.gui;
 
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import uk.ac.aber.cs221.group15.TaskerCLI;
 
@@ -13,7 +11,7 @@ import uk.ac.aber.cs221.group15.TaskerCLI;
  * where the current view will be at index 0 of the StackPane
  *
  * @author Darren White
- * @version 0.0.3
+ * @version 0.0.4
  */
 public class NavigationPane extends GridPane {
 
@@ -44,13 +42,12 @@ public class NavigationPane extends GridPane {
 		DashboardView db = new DashboardView(token);
 		TaskView tasks = new TaskView(token);
 
+		// Set id for css
+		setId("nav-pane");
 		// Set padding and gaps to 0px
 		setPadding(new Insets(0, 0, 0, 0));
 		setHgap(0);
 		setVgap(0);
-
-		// Set background - TODO use css later
-		setStyle("-fx-background-color: rgb(230, 230, 230);");
 
 		// The navigation link to the Dashboard view
 		NavButton paneDb = new NavButton("Dashboard");
@@ -137,14 +134,8 @@ public class NavigationPane extends GridPane {
 	 * @param view   The view to display
 	 */
 	private void setCurrentView(NavButton navBtn, StackPane stack, Pane view) {
-		// Set all NavButton styles as unselected
-		getChildren().stream().filter(n -> n instanceof NavButton).forEach(n -> {
-			NavButton pane = (NavButton) n;
-			pane.unselect();
-		});
-
-		// Set the NavButton style as selected
-		navBtn.select();
+		// Select the button
+		navBtn.setSelected(true);
 
 		// If there is no current view, add it
 		if (stack.getChildren().isEmpty()) {
@@ -156,91 +147,25 @@ public class NavigationPane extends GridPane {
 	}
 
 	/**
-	 * Used as a navigation button/pane
+	 * Used as a navigation button
 	 */
-	private static class NavButton extends StackPane {
+	private class NavButton extends ToggleButton {
 
 		/**
-		 * The label to display a descriptive title
-		 */
-		private final Label lbl;
-
-		/**
-		 * Useful variables to test if the NavButton
-		 * is the current view or is being hovered (by the mouse)
-		 */
-		private boolean selected, hover;
-
-		/**
-		 * Creates a new unselected NavButton with a label
+		 * Creates a new unselected NavButton with a caption
 		 *
-		 * @param text The text to use for the label
+		 * @param text The text to use for the button
 		 */
 		private NavButton(String text) {
-			// Create a label with the font size
-			lbl = new Label(text);
-			lbl.setFont(new Font(16));
-
-			// Add it and center it
-			getChildren().add(lbl);
-			StackPane.setAlignment(lbl, Pos.CENTER);
-
-			// Default is to unselect it
-			unselect();
-
-			// Add mouse event handlers for enter/exit
-			setOnMouseEntered(e -> enter());
-			setOnMouseExited(e -> exit());
-		}
-
-		/**
-		 * Used when the mouse enters this pane
-		 * Sets the style as selected
-		 */
-		private void enter() {
-			// Change the style if we are not selected
-			if (!selected) {
-				setStyle("-fx-background-color: rgba(200, 200, 200);");
-			}
-
-			// Mouse entered, we are hovering
-			hover = true;
-		}
-
-		/**
-		 * Used when the mouse exits this pane
-		 * Sets the style as unselected
-		 */
-		private void exit() {
-			// Only unselect if it isn't the current view
-			if (!selected) {
-				unselect();
-			}
-
-			// Mouse has exited, so we are not hovering
-			hover = false;
-		}
-
-		/**
-		 * Changes the style to make this panel the
-		 * selected view (current display)
-		 */
-		private void select() {
-			// Change the style to show that it is selected
-			setStyle("-fx-background-color: rgb(40, 140, 255);");
-			lbl.setStyle("-fx-text-fill: white;");
-			selected = true;
-		}
-
-		/**
-		 * Changes the style to make this panel not selected
-		 */
-		private void unselect() {
-			// Change the style to default to show it is not selected
-			setStyle("-fx-background-color: rgb(230, 230, 230);" +
-					"-fx-text-fill: rgb(40, 140, 255);");
-			lbl.setStyle("-fx-text-fill: rgb(40, 140, 255);");
-			selected = false;
+			super(text);
+			// Add the css class for styling
+			getStyleClass().add("nav-btn");
+			// Make the button fill its cell
+			setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+			// On mouse click unselect all other NavButtons
+			setOnMouseReleased(e -> NavigationPane.this.getChildren().stream().filter(n -> n instanceof NavButton).forEach(n -> {
+				((NavButton) n).setSelected(false);
+			}));
 		}
 	}
 }

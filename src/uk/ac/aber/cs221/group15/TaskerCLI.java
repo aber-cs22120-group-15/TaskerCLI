@@ -6,13 +6,17 @@ import javafx.stage.Stage;
 import uk.ac.aber.cs221.group15.gui.Login;
 import uk.ac.aber.cs221.group15.gui.OverviewPane;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Paths;
+
 /**
  * The main entry point to the application which
  * displays the login window and if successful
  * will then show the main window
  *
  * @author Darren White
- * @version 0.0.1
+ * @version 0.0.2
  */
 public class TaskerCLI extends Application {
 
@@ -35,6 +39,28 @@ public class TaskerCLI extends Application {
 	 * The main window height
 	 */
 	private static final double APP_HEIGHT = 600;
+
+	/**
+	 * Get the resource at the path
+	 *
+	 * @param path The relative path for the resource
+	 * @return The absolute URL for the resource
+	 */
+	public static URL getResource(String path) {
+		// Try and find the resource locally (relative in the JAR file)
+		URL in = TaskerCLI.class.getResource('/' + path);
+
+		// Not found so we get the resource relative to the working directory
+		if (in == null) {
+			try {
+				in = Paths.get(path).toUri().toURL();
+			} catch (MalformedURLException e) {
+				return null;
+			}
+		}
+
+		return in;
+	}
 
 	/**
 	 * The main entry point
@@ -96,6 +122,8 @@ public class TaskerCLI extends Application {
 		// Create a new scene with the default width & height
 		Scene scene = new Scene(ovp, APP_WIDTH, APP_HEIGHT);
 
+		// Set the stylesheet for css styling
+		scene.getStylesheets().add(TaskerCLI.getResource("resources/css/TaskerCLI.css").toExternalForm());
 		// Set the primary stage scene and the default title
 		stage.setScene(scene);
 		stage.setTitle(APP_NAME);

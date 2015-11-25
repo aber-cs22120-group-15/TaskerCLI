@@ -8,13 +8,20 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.json.simple.parser.ParseException;
+import uk.ac.aber.cs221.group15.TaskerCLI;
 import uk.ac.aber.cs221.group15.service.LoginService;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 /**
  * This class displays a Login window where
@@ -26,7 +33,7 @@ import java.io.IOException;
  * to enable a faster login process
  *
  * @author Darren White
- * @version 0.0.4
+ * @version 0.0.5
  */
 public class Login extends Stage {
 
@@ -44,6 +51,12 @@ public class Login extends Stage {
 	 * The main window height
 	 */
 	private static final double HEIGHT = 200;
+
+	/**
+	 * The path to store user credentials
+	 */
+	private static final String CACHE_PATH = System.getProperty("user.home") +
+			File.separator + ".taskercli";
 
 	/**
 	 * The service used to submit login requests
@@ -114,8 +127,8 @@ public class Login extends Stage {
 		Button login = new Button("Sign in");
 		Label lblStatus = new Label();
 
-		// The title needs to stand out
-		lblTitle.setFont(new Font(20));
+		// Set label id for css
+		lblTitle.setId("lbl-title");
 
 		// Set the hint text (displayed when no text is input and no focus)
 		txtEmail.setPromptText("Email address");
@@ -145,13 +158,13 @@ public class Login extends Stage {
 		// Make the login button stretch
 		login.setMaxWidth(WIDTH);
 
+		// Set the label id for css
+		lblStatus.setId("lbl-status");
 		// Set the status text to the statusProp field
 		// Whenever the statusProp value is changed this
 		// label will also change what it displays to the
 		// value of the statusProp
 		lblStatus.textProperty().bind(statusProp);
-		// The status displays any errors, so make it red
-		lblStatus.setStyle("-fx-text-fill: red;");
 
 		// Add each component to a new row (all in column 0)
 		grid.add(lblTitle, 0, 0);
@@ -166,6 +179,25 @@ public class Login extends Stage {
 		// Email and password is showing
 		lblTitle.requestFocus();
 
+		// The path to store the credentials
+		Path p = Paths.get(CACHE_PATH);
+
+		// If the path exists then load then credentials
+		if (Files.exists(p)) {
+			// Create a reader to read the email
+			try (BufferedReader br = Files.newBufferedReader(p)) {
+				// Set the email text as the email in the file
+				txtEmail.setText(br.readLine());
+				// Remember user again
+				cbRemember.setSelected(true);
+				// Set the focus on the password text
+				pwd.requestFocus();
+			} catch (IOException e) {
+				System.err.println("Unable to load previous email!");
+				e.printStackTrace();
+			}
+		}
+
 		// Set the width of all components to 55% of the window width
 		ColumnConstraints cc0 = new ColumnConstraints();
 		cc0.setPercentWidth(55);
@@ -173,6 +205,8 @@ public class Login extends Stage {
 		// Change the column size
 		grid.getColumnConstraints().add(cc0);
 
+		// Set the stylesheet for css styling
+		scene.getStylesheets().add(TaskerCLI.getResource("resources/css/Login.css").toExternalForm());
 		// Sets the scene
 		setScene(scene);
 	}
@@ -185,12 +219,13 @@ public class Login extends Stage {
 	 * @param remember If the user is to be remembered for next time
 	 */
 	private void login(String email, String pwd, boolean remember) {
-		// TODO Implement the remember me feature - store the email for next time
-
 		try {
 			// Submit the email and password
 			// and store the token is successful (null if error)
 			token = service.login(email, pwd);
+
+			// The path to store the credentials
+			Path p = Paths.get(CACHE_PATH);
 
 			// We encountered an error
 			if (token == null) {
@@ -198,7 +233,30 @@ public class Login extends Stage {
 				// Display the message
 				statusProp.set(service.getErrorMessage());
 			} else {
-				// We logged in, so close this window
+				// We logged in successfully
+
+				// Save the credentials for next time if we need to
+				if (remember) {
+					// Create a writer for the path (overwrite existing)
+					try (BufferedWriter bw = Files.newBufferedWriter(p, StandardOpenOption.CREATE)) {
+						// Write the email to the file
+						bw.write(email);
+						// Flush before close
+						bw.flush();
+						// Auto close
+					} catch (IOException e) {
+						System.err.println("Unable to save credentials!");
+						e.printStackTrace();
+					}
+				} else {
+					// We don't want to save the credentials so delete the
+					// existing ones if there is any
+					if (Files.exists(p)) {
+						Files.delete(p);
+					}
+				}
+
+				// Close this window
 				close();
 			}
 		} catch (IOException e) {

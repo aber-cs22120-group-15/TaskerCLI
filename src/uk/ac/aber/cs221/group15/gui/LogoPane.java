@@ -4,7 +4,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Font;
 
 /**
  * This class will display a banner/logo for the client
@@ -25,18 +24,20 @@ public class LogoPane extends StackPane {
 	 * Initialize this pane and its components
 	 */
 	private void init() {
+		// Set the id for css styles
+		setId("logo-pane");
 		// Set padding to 10px
 		setPadding(new Insets(10));
 
 		// TODO Add logo imageview
-		// Use a temporary placeholder and add it to this pane
+		// Use a temporary placeholder
 		Label tmp = new Label("TaskerCLI");
-		tmp.setFont(new Font(20));
-		tmp.setStyle("-fx-text-fill: rgb(40, 140, 255);");
+		// Set the label id for css stlying
+		tmp.setId("lbl-banner");
+		// Add it to this pane
 		getChildren().add(tmp);
 
-		// Center the label and set its color
+		// Center the label
 		setAlignment(tmp, Pos.CENTER);
-		setStyle("-fx-background-color: rgb(40, 40, 40);");
 	}
 }
