@@ -40,9 +40,19 @@ public class DashboardView extends GridPane {
 	private static final int STATISTICS_HEIGHT = 115;
 
 	/**
+	 * The number of tasks to show for the dashboard overview
+	 */
+	private static final int MAX_TASKS = 10;
+
+	/**
 	 * The service used to submit requests to list all tasks
 	 */
 	private static final TaskService service = new TaskService();
+
+	/**
+	 * The list to store all the user tasks
+	 */
+	private final ObservableList<Task> tasks = FXCollections.observableArrayList();
 
 	/**
 	 * Creates a new Dashboard
@@ -53,7 +63,8 @@ public class DashboardView extends GridPane {
 		init(token);
 	}
 
-	private List<StatPane> createStatPanes(ObservableList<Task> tasks) {
+	private List<StatPane> createStatPanes() {
+		// Store panes in a list
 		List<StatPane> panes = new ArrayList<>();
 
 		// The outstanding tasks statistic
@@ -64,9 +75,12 @@ public class DashboardView extends GridPane {
 			return tasks.filtered(t -> t.getDateDue().compareTo(now) > 0 &&
 					t.getStatus() == Task.ALLOCATED).size();
 		};
+		// The color for the outstanding tasks stat
 		Callable<Paint> outstandingColor = () -> {
+			// Get the current stat number
 			int stat = outstandingTasks.call();
 
+			// Green if 0, Orange < 10 otherwise red
 			if (stat == 0) {
 				return Color.GREEN;
 			} else if (stat < 10) {
@@ -76,18 +90,23 @@ public class DashboardView extends GridPane {
 			}
 		};
 
+		// Add the outstanding takes stat
 		panes.add(new StatPane("Outstanding Tasks", outstandingTasks,
 				outstandingColor, tasks));
 
+		// The statistic value for overdue tasks
 		Callable<Integer> overdueTasks = () -> {
 			// The current date
 			Date now = new GregorianCalendar().getTime();
 			// Filter tasks to dates in past
 			return tasks.filtered(t -> t.getDateDue().compareTo(now) < 0).size();
 		};
+		// The color for the overdue tasks stat
 		Callable<Paint> overdueColor = () -> {
+			// Get the current stat number
 			int stat = overdueTasks.call();
 
+			// If 0 overdue tasks, set it as green otherwise red
 			if (stat == 0) {
 				return Color.GREEN;
 			} else {
@@ -98,6 +117,7 @@ public class DashboardView extends GridPane {
 		// The overdue tasks statistic
 		panes.add(new StatPane("Overdue Tasks", overdueTasks, overdueColor, tasks));
 
+		// Return the stat panes
 		return panes;
 	}
 
@@ -106,35 +126,32 @@ public class DashboardView extends GridPane {
 	 *
 	 * @return A new table to display tasks
 	 */
-	private TableView<Task> createTaskTable(ObservableList<Task> tasks) {
+	private TableView<Task> createTaskTable() {
 		// Create the task table for an overview of tasks
-		TableView<Task> table = new TableView<>(tasks);
+		TableView<Task> table = new TableView<>();
+		table.itemsProperty().bind(Bindings.createObjectBinding(() ->
+				tasks.filtered(t -> tasks.indexOf(t) < MAX_TASKS), tasks));
 
-		// Create four columns: id, task, due date, and member
-		TableColumn<Task, Integer> idCol = new TableColumn<>("ID");
+		// Create three columns: task, due date, and member
 		TableColumn<Task, String> titleCol = new TableColumn<>("Task");
 		TableColumn<Task, Date> dueDateCol = new TableColumn<>("Due date");
-		TableColumn<Task, String> creatorCol = new TableColumn<>("Member");
+		TableColumn<Task, String> creatorCol = new TableColumn<>("Assigned by");
 
 		// Set each of the cell value factories (which fields they
 		// correspond to in the Task class)
-		idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
 		titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
 		dueDateCol.setCellValueFactory(new PropertyValueFactory<>("dateDue"));
 		creatorCol.setCellValueFactory(new PropertyValueFactory<>("creator"));
 
 		// Set the column dyanmic sizes
-		// ID col - 5% width (- 2 so that the horizontal scrollbar doesn't show)
-		// Title col - 40% width
+		// Title col - 40% width (subtract 2 so that the horizontal scrollbar doesn't show)
 		// Due date col - 30% width
-		// Creator name col - 25% width
-		idCol.prefWidthProperty().bind(table.widthProperty().multiply(0.05).subtract(2));
-		titleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4));
+		// Creator name col - 30% width
+		titleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4).subtract(2));
 		dueDateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
-		creatorCol.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
+		creatorCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
 
-		// Add the four columns to the table
-		table.getColumns().add(idCol);
+		// Add the three columns to the table
 		table.getColumns().add(titleCol);
 		table.getColumns().add(dueDateCol);
 		table.getColumns().add(creatorCol);
@@ -151,13 +168,10 @@ public class DashboardView extends GridPane {
 	private void init(String token) {
 		// Set the id for css
 		setId("db-view");
-		// Set padding & gaps to 10px
+		// Set padding to 10 & hgap to 0px & vgap to 10px
 		setPadding(new Insets(10));
-		setHgap(10);
+		setHgap(0);
 		setVgap(10);
-
-		// The list of tasks in the overview
-		ObservableList<Task> tasks = FXCollections.observableArrayList();
 
 		try {
 			// Try and load the tasks from the database
@@ -167,19 +181,27 @@ public class DashboardView extends GridPane {
 		}
 
 		// Creates the panes for the statistics
-		List<StatPane> panes = createStatPanes(tasks);
+		List<StatPane> panes = createStatPanes();
 
 		// Add the panes to the first row, one in each column
 		for (int i = 0; i < panes.size(); i++) {
 			add(panes.get(i), i, 0);
 		}
 
-		// Create the task table
-		TableView<Task> taskTable = createTaskTable(tasks);
+		// Create and add the table to the second row (row 1),
+		// in the first column (col 0)
+		// and allow it to span two columns and one row
+		add(createTaskTable(), 0, 2, 2, 1);
 
-		// Add the table to the second row (row 1), in the first column (col 0)
-		// and allow it to span all four columns and 1 row
-		add(taskTable, 0, 1, 4, 1);
+		// The caption for the table
+		Label lblTableCaption = new Label("Tasks Overview");
+		// Set the id for css
+		lblTableCaption.setId("lbl-task-overview");
+		// Center it
+		GridPane.setHalignment(lblTableCaption, HPos.CENTER);
+		// Add it below the stat panes and above the table
+		// allowing it to span two columns and one row
+		add(lblTableCaption, 0, 1, 2, 1);
 
 		// Column 0 - for outstanding tasks (50% width)
 		ColumnConstraints cc0 = new ColumnConstraints();
@@ -197,12 +219,16 @@ public class DashboardView extends GridPane {
 		rw0.setMinHeight(STATISTICS_HEIGHT);
 		rw0.setMaxHeight(STATISTICS_HEIGHT);
 
-		// Row 1 - tasks overview table (fill remaining height)
+		// Row 1 - Table caption (fit to the label size)
 		RowConstraints rw1 = new RowConstraints();
-		rw1.setVgrow(Priority.ALWAYS);
+		rw1.setVgrow(Priority.NEVER);
+
+		// Row 2 - tasks overview table (fill remaining height)
+		RowConstraints rw2 = new RowConstraints();
+		rw2.setVgrow(Priority.ALWAYS);
 
 		// Change the row sizes
-		getRowConstraints().addAll(rw0, rw1);
+		getRowConstraints().addAll(rw0, rw1, rw2);
 	}
 
 	/**

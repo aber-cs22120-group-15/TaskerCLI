@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.ColumnConstraints;
@@ -51,19 +52,35 @@ public class TaskView extends GridPane {
 		// Create the task table for the tasks
 		TableView<Task> table = new TableView<>(tasks);
 
-		// Create seven columns: id, task, created date, due date,
+		// Use this for listening to mouse events on each row
+		table.setRowFactory(tv -> {
+			// Create the row
+			TableRow<Task> tr = new TableRow<>();
+			// Add mouse event
+			tr.setOnMouseClicked(event -> {
+				// On double click on a row with a task
+				if (event.getClickCount() == 2 && !tr.isEmpty()) {
+					// Show task details window
+					TaskDetail taskDetail = new TaskDetail(getScene().getWindow(), tr.getItem());
+					taskDetail.sizeToScene();
+					taskDetail.showAndWait();
+				}
+			});
+			// Return the row
+			return tr;
+		});
+
+		// Create six columns: task, created date, due date,
 		// completed date, member and status
-		TableColumn<Task, Integer> idCol = new TableColumn<>("ID");
 		TableColumn<Task, String> titleCol = new TableColumn<>("Task");
 		TableColumn<Task, Date> createdDateCol = new TableColumn<>("Date created");
 		TableColumn<Task, Date> dueDateCol = new TableColumn<>("Due date");
 		TableColumn<Task, Date> completedDateCol = new TableColumn<>("Date completed");
-		TableColumn<Task, String> creatorCol = new TableColumn<>("Member");
+		TableColumn<Task, String> creatorCol = new TableColumn<>("Assigned by");
 		TableColumn<Task, String> statusCol = new TableColumn<>("Status");
 
 		// Set each of the cell value factories (which fields they
 		// correspond to in the Task class)
-		idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
 		titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
 		createdDateCol.setCellValueFactory(new PropertyValueFactory<>("dateCreated"));
 		dueDateCol.setCellValueFactory(new PropertyValueFactory<>("dateDue"));
@@ -91,23 +108,20 @@ public class TaskView extends GridPane {
 		});
 
 		// Set the column dyanmic sizes
-		// ID col - 5% width (- 2 so that the horizontal scrollbar doesn't show)
-		// Title col - 25% width
+		// Title col - 25% width (subtract 2 so that the horizontal scrollbar doesn't show)
 		// Created date col - 15% width
 		// Due date col - 15% width
 		// Completed date col - 15% width
 		// Creator name col - 15% width
-		// Status col - 10% width
-		idCol.prefWidthProperty().bind(table.widthProperty().multiply(0.05).subtract(2));
+		// Status col - 15% width
 		titleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
 		createdDateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
 		dueDateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
 		completedDateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
 		creatorCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
-		statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.1));
+		statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
 
-		// Add the seven columns to the table
-		table.getColumns().add(idCol);
+		// Add the six columns to the table
 		table.getColumns().add(titleCol);
 		table.getColumns().add(createdDateCol);
 		table.getColumns().add(dueDateCol);

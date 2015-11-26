@@ -17,7 +17,7 @@ import java.util.Set;
  * to get all tasks for a user using the unique token
  *
  * @author Darren White
- * @version 0.0.2
+ * @version 0.0.3
  */
 public class TaskService extends Service {
 
@@ -28,10 +28,22 @@ public class TaskService extends Service {
 	private static final String METHOD_LIST_TASKS = "list_tasks";
 
 	/**
+	 * The extra arguments needed for the method to submit.
+	 * The user token/key is needed to get the list of tasks.
+	 */
+	private static final String METHOD_LIST_TASKS_ARGUMENTS = "&token=%s";
+
+	/**
 	 * The method to submit in the final url to
 	 * list a tasks' steps
 	 */
-	private static final String METHOD_LIST_TASK_STEPS = "list_tasks";
+	private static final String METHOD_GET_STEPS = "get_steps";
+
+	/**
+	 * The extra arguments needed for the method to submit.
+	 * The user token/key is needed and a task id to get the task steps.
+	 */
+	private static final String METHOD_GET_STEPS_ARGUMENTS = "&token=%s&id=%d";
 
 	/**
 	 * The method to submit in the final url to
@@ -40,18 +52,17 @@ public class TaskService extends Service {
 	private static final String METHOD_SET_COMMENT = "set_task_step_comment";
 
 	/**
-	 * The extra arguments needed for the method to submit.
-	 * The user token/key is needed to get the list of tasks.
-	 */
-	private static final String METHOD_ARGUMENTS = "&token=%s";
-
-	/**
 	 * The key attribute to get the task list value
 	 */
 	private static final String KEY_TASKS = "tasks";
 
 	/**
-	 * The key attribute to get the task id
+	 * The key attribute to get the task list value
+	 */
+	private static final String KEY_STEPS = "steps";
+
+	/**
+	 * The key attribute to get the task/step id
 	 */
 	private static final String KEY_ID = "id";
 
@@ -90,6 +101,16 @@ public class TaskService extends Service {
 	private static final String KEY_STATUS = "status";
 
 	/**
+	 * The key attribute to get the step description
+	 */
+	private static final String KEY_DESCRIPTION = "description";
+
+	/**
+	 * The key attribute to get the step comment
+	 */
+	private static final String KEY_COMMENT = "comment";
+
+	/**
 	 * The date format used to parse date/time values
 	 */
 	private static final SimpleDateFormat format =
@@ -103,9 +124,37 @@ public class TaskService extends Service {
 	 * @param id    The unique id for the task
 	 * @return The steps associated with the task with the id
 	 */
-	public Set<Step> getTaskSteps(String token, int id) {
+	public Set<Step> getTaskSteps(String token, int id) throws IOException, ParseException {
+		// Use a LinkedHashSet so no duplicates are added
+		// and ordering is preserved
 		Set<Step> steps = new LinkedHashSet<>();
-		// TODO
+		// Create the url to submit with the method, and token
+		String url = String.format(URL_METHOD_TEMPLATE, METHOD_GET_STEPS) +
+				String.format(METHOD_GET_STEPS_ARGUMENTS, token, id);
+		// Submit the request along with the token
+		int status = submit(url);
+
+		// An error occurred, handle it
+		if (status == STATUS_ERROR) {
+			// This should never happen as the token
+			// is retrieved at login and task ids are loaded
+			// from list_tasks method
+			throw new IllegalStateException(getErrorMessage());
+		} else if (status == STATUS_SUCCESS) {
+			// Get the response object
+			JSONObject response = getResponse();
+			// Get the list of tasks as an array
+			JSONArray stepList = (JSONArray) response.get(KEY_STEPS);
+
+			// Iterate over the tasks
+			for (Object o : stepList) {
+				// Each object is a JSON object
+				JSONObject obj = (JSONObject) o;
+
+				// Parse the step and add it to the set
+				steps.add(parseStep(obj));
+			}
+		}
 
 		return steps;
 	}
@@ -125,7 +174,7 @@ public class TaskService extends Service {
 		Set<Task> tasks = new LinkedHashSet<>();
 		// Create the url to submit with the method, and token
 		String url = String.format(URL_METHOD_TEMPLATE, METHOD_LIST_TASKS) +
-				String.format(METHOD_ARGUMENTS, token);
+				String.format(METHOD_LIST_TASKS_ARGUMENTS, token);
 		// Submit the request along with the token
 		int status = submit(url);
 
@@ -173,6 +222,24 @@ public class TaskService extends Service {
 	}
 
 	/**
+	 * Parse the step from the JSONObject
+	 *
+	 * @param obj The object to parse the step from
+	 * @return The new step from the object
+	 */
+	private Step parseStep(JSONObject obj) {
+		// Get step id (cannot cast to int as json works with strings)
+		int id = Integer.parseInt((String) obj.get(KEY_ID));
+		// Get the title of the step
+		String desc = (String) obj.get(KEY_DESCRIPTION);
+		// Get the comment of the step
+		String comment = (String) obj.get(KEY_COMMENT);
+
+		// Create the step and return it
+		return new Step(id, desc, comment);
+	}
+
+	/**
 	 * Parse the task values from the JSONObject
 	 *
 	 * @param obj The object to parse values from
@@ -188,9 +255,14 @@ public class TaskService extends Service {
 		// Parse dates
 		Date dateCreated = parseDate((String) obj.get(KEY_DATE_CREATED));
 		Date dateDue = parseDate((String) obj.get(KEY_DATE_DUE));
-		Date dateCompleted = parseDate((String) obj.get(KEY_DATE_COMPLETED));
+		Date dateCompleted = null;
 		// Get the task status
 		int status = Integer.parseInt((String) obj.get(KEY_STATUS));
+
+		// Task date can only be set if the task has been completed
+		if (status == Task.COMPLETED) {
+			dateCompleted = parseDate((String) obj.get(KEY_DATE_COMPLETED));
+		}
 
 		// Create the task and return it
 		return new Task(id, title, creator, dateCreated, dateDue,

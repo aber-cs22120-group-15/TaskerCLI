@@ -1,7 +1,10 @@
 package uk.ac.aber.cs221.group15.gui;
 
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import uk.ac.aber.cs221.group15.task.Task;
@@ -39,12 +42,16 @@ public class TaskDetail extends Stage {
 	 * @param task  The task to display details for
 	 */
 	public TaskDetail(Window owner, Task task) {
+		// Use window modality so the main window cannot be used while
+		// this window is open
+		initModality(Modality.WINDOW_MODAL);
 		// Set the owner as the main window
 		initOwner(owner);
 		// No need for the task details to be resizable
 		setResizable(false);
 		// Set the title of the window
 		setTitle(APP_NAME);
+		setAlwaysOnTop(true);
 
 		// Initialize the components
 		init(task);
@@ -63,6 +70,10 @@ public class TaskDetail extends Stage {
 		Scene scene = new Scene(grid, WIDTH, HEIGHT);
 
 		// TODO Add main components wuth functionality
+		Label lblTitle = new Label(task.getTitle());
+
+		grid.add(lblTitle, 0, 0);
+		grid.setAlignment(Pos.CENTER);
 
 		// Sets the scene
 		setScene(scene);
