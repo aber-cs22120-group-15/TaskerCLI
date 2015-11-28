@@ -1,7 +1,6 @@
 package uk.ac.aber.cs221.group15.gui;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
+import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -9,17 +8,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.TextAlignment;
-import org.json.simple.parser.ParseException;
 import uk.ac.aber.cs221.group15.service.TaskService;
 import uk.ac.aber.cs221.group15.task.Task;
 
-import java.io.IOException;
 import java.util.Date;
 
 /**
@@ -38,20 +34,28 @@ public class TaskView extends GridPane {
 	private static final TaskService service = new TaskService();
 
 	/**
+	 * The list to store all the user tasks
+	 */
+	private final ObservableList<Task> tasks;
+
+	/**
 	 * Creates a new task view
 	 *
 	 * @param token The token for the current user
+	 * @param tasks The tasks for the user
 	 */
-	public TaskView(String token) {
+	public TaskView(String token, ObservableList<Task> tasks) {
+		this.tasks = tasks;
 		init(token);
 	}
 
 	/**
 	 * Creates a table to display tasks
 	 *
+	 * @param token The token for the current user
 	 * @return A new table to display tasks
 	 */
-	private TableView<Task> createTaskTable(ObservableList<Task> tasks) {
+	private TableView<Task> createTaskTable(String token) {
 		// Create the task table for the tasks
 		TableView<Task> table = new TableView<>(tasks);
 
@@ -64,7 +68,7 @@ public class TaskView extends GridPane {
 				// On double click on a row with a task
 				if (event.getClickCount() == 2 && !tr.isEmpty()) {
 					// Show task details window
-					TaskDetail taskDetail = new TaskDetail(getScene().getWindow(), tr.getItem());
+					TaskDetail taskDetail = new TaskDetail(getScene().getWindow(), token, tr.getItem());
 					taskDetail.sizeToScene();
 					taskDetail.showAndWait();
 				}
@@ -84,31 +88,25 @@ public class TaskView extends GridPane {
 
 		// Set each of the cell value factories (which fields they
 		// correspond to in the Task class)
-		titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
-		createdDateCol.setCellValueFactory(new PropertyValueFactory<>("dateCreated"));
-		dueDateCol.setCellValueFactory(new PropertyValueFactory<>("dateDue"));
-		completedDateCol.setCellValueFactory(new PropertyValueFactory<>("dateCompleted"));
-		creatorCol.setCellValueFactory(new PropertyValueFactory<>("creator"));
-		statusCol.setCellValueFactory(t -> {
-			int status = t.getValue().getStatus();
-			SimpleStringProperty val = new SimpleStringProperty();
-
-			switch (status) {
+		titleCol.setCellValueFactory(t -> t.getValue().titleProperty());
+		createdDateCol.setCellValueFactory(t -> t.getValue().dateCreatedProperty());
+		dueDateCol.setCellValueFactory(t -> t.getValue().dateDueProperty());
+		completedDateCol.setCellValueFactory(t -> t.getValue().dateCompletedProperty());
+		creatorCol.setCellValueFactory(t -> t.getValue().creatorProperty());
+		// Convert the status integer to readable string
+		statusCol.setCellValueFactory(t -> Bindings.createStringBinding(() -> {
+			// Get the correct status string
+			switch (t.getValue().getStatus()) {
 				case Task.ABANDONED:
-					val.set("Abandoned");
-					break;
+					return "Abandoned";
 				case Task.ALLOCATED:
-					val.set("Allocated");
-					break;
+					return "Allocated";
 				case Task.COMPLETED:
-					val.set("Completed");
-					break;
+					return "Completed";
 				default:
-					throw new IllegalStateException("Unknown status: " + status);
+					return null;
 			}
-
-			return val;
-		});
+		}, t.getValue().statusProperty()));
 
 		// Set the column dyanmic sizes
 		// Title col - 25% width (subtract 2 so that the horizontal scrollbar doesn't show)
@@ -138,22 +136,14 @@ public class TaskView extends GridPane {
 
 	/**
 	 * Initializes this view and its components
+	 *
+	 * @param token The token for the current user
 	 */
 	private void init(String token) {
 		// Set padding & gaps to 10px
 		setPadding(new Insets(10));
 		setHgap(10);
 		setVgap(10);
-
-		// The list of tasks in the overview
-		ObservableList<Task> tasks = FXCollections.observableArrayList();
-
-		try {
-			// Try and load the tasks from the database
-			tasks.addAll(service.getTasks(token));
-		} catch (IOException | ParseException e) {
-			e.printStackTrace();
-		}
 
 		// The caption for the table
 		Label lblTableCaption = new Label("All Tasks\nDouble-click a task for more detail");
@@ -167,7 +157,7 @@ public class TaskView extends GridPane {
 		add(lblTableCaption, 0, 0);
 
 		// Create the task table and add it
-		add(createTaskTable(tasks), 0, 1);
+		add(createTaskTable(token), 0, 1);
 
 		// Column 0 - fill everything
 		ColumnConstraints cc0 = new ColumnConstraints();

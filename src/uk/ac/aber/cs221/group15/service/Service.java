@@ -12,7 +12,7 @@ import java.net.URL;
  * This class sends requests to the database server
  *
  * @author Darren White
- * @version 0.0.1
+ * @version 0.0.2
  */
 public abstract class Service {
 
@@ -98,14 +98,14 @@ public abstract class Service {
 	 * @return The response object
 	 * @link getStatus()
 	 */
-	public JSONObject getResponse() {
+	public Object getResponse() {
 		// If the status is not success, there is no response object
 		if (getStatus() != STATUS_SUCCESS) {
 			return null;
 		}
 
 		// Get the response object and return it
-		return (JSONObject) result.get(KEY_RESPONSE);
+		return result.get(KEY_RESPONSE);
 	}
 
 	/**

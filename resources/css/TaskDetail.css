@@ -1,0 +1,17 @@
+.root {
+    -fx-background-color: rgb(255, 255, 255);
+}
+
+.label {
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
+}
+
+#btn-completed {
+    -fx-alignment: center;
+}
+
+#lbl-task-title {
+    -fx-font-size: 18;
+    -fx-font-weight: bold;
+}

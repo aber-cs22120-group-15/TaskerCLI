@@ -1,5 +1,7 @@
 package uk.ac.aber.cs221.group15.service;
 
+import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -17,7 +19,7 @@ import java.util.Set;
  * to get all tasks for a user using the unique token
  *
  * @author Darren White
- * @version 0.0.3
+ * @version 0.0.4
  */
 public class TaskService extends Service {
 
@@ -44,6 +46,18 @@ public class TaskService extends Service {
 	 * The user token/key is needed and a task id to get the task steps.
 	 */
 	private static final String METHOD_GET_STEPS_ARGUMENTS = "&token=%s&id=%d";
+
+	/**
+	 * The method to submit in the final url to list
+	 * all the users tasks
+	 */
+	private static final String METHOD_UPDATE_STATUS = "change_status";
+
+	/**
+	 * The extra arguments needed for the method to submit.
+	 * The user token/key is needed and a task id to get the task steps.
+	 */
+	private static final String METHOD_UPDATE_STATUS_ARGUMENTS = "&token=%s&id=%d&status=%d";
 
 	/**
 	 * The method to submit in the final url to
@@ -101,9 +115,9 @@ public class TaskService extends Service {
 	private static final String KEY_STATUS = "status";
 
 	/**
-	 * The key attribute to get the step description
+	 * The key attribute to get the step title
 	 */
-	private static final String KEY_DESCRIPTION = "description";
+	private static final String KEY_STEP_TITLE = "title";
 
 	/**
 	 * The key attribute to get the step comment
@@ -142,7 +156,7 @@ public class TaskService extends Service {
 			throw new IllegalStateException(getErrorMessage());
 		} else if (status == STATUS_SUCCESS) {
 			// Get the response object
-			JSONObject response = getResponse();
+			JSONObject response = (JSONObject) getResponse();
 			// Get the list of tasks as an array
 			JSONArray stepList = (JSONArray) response.get(KEY_STEPS);
 
@@ -164,14 +178,10 @@ public class TaskService extends Service {
 	 * using the token
 	 *
 	 * @param token The token for the current user
-	 * @return The set of tasks retrieved from the database
 	 * @throws IOException    If an I/O exception occurs
 	 * @throws ParseException If a Parse exception occurs
 	 */
-	public Set<Task> getTasks(String token) throws IOException, ParseException {
-		// Use a LinkedHashSet so no duplicates are added
-		// and ordering is preserved
-		Set<Task> tasks = new LinkedHashSet<>();
+	public void getTasks(String token, ObservableList<Task> tasks) throws IOException, ParseException {
 		// Create the url to submit with the method, and token
 		String url = String.format(URL_METHOD_TEMPLATE, METHOD_LIST_TASKS) +
 				String.format(METHOD_LIST_TASKS_ARGUMENTS, token);
@@ -185,7 +195,7 @@ public class TaskService extends Service {
 			throw new IllegalStateException(getErrorMessage());
 		} else if (status == STATUS_SUCCESS) {
 			// Get the response object
-			JSONObject response = getResponse();
+			JSONObject response = (JSONObject) getResponse();
 			// Get the list of tasks as an array
 			JSONArray taskList = (JSONArray) response.get(KEY_TASKS);
 
@@ -194,13 +204,17 @@ public class TaskService extends Service {
 				// Each object is a JSON object
 				JSONObject obj = (JSONObject) o;
 
-				// Parse the task and add it to the set
-				tasks.add(parseTask(obj));
+				// Parse the task
+				Task task = parseTask(obj);
+
+				// Get the task steps
+				task.addSteps(getTaskSteps(token, task.getId()));
+
+				// Add it to the list
+				// Run on the JavaFX thread so it can update the table
+				Platform.runLater(() -> tasks.add(task));
 			}
 		}
-
-		// Return all tasks
-		return tasks;
 	}
 
 	/**
@@ -210,7 +224,7 @@ public class TaskService extends Service {
 	 * @return The Date parsed from the string
 	 * @link format
 	 */
-	private static Date parseDate(String s) {
+	private Date parseDate(String s) {
 		try {
 			// Try and parse the date from the string
 			return format.parse(s);
@@ -231,12 +245,12 @@ public class TaskService extends Service {
 		// Get step id (cannot cast to int as json works with strings)
 		int id = Integer.parseInt((String) obj.get(KEY_ID));
 		// Get the title of the step
-		String desc = (String) obj.get(KEY_DESCRIPTION);
+		String title = (String) obj.get(KEY_STEP_TITLE);
 		// Get the comment of the step
 		String comment = (String) obj.get(KEY_COMMENT);
 
 		// Create the step and return it
-		return new Step(id, desc, comment);
+		return new Step(id, title, comment);
 	}
 
 	/**
@@ -245,7 +259,7 @@ public class TaskService extends Service {
 	 * @param obj The object to parse values from
 	 * @return The new task with values from the object
 	 */
-	private static Task parseTask(JSONObject obj) {
+	private Task parseTask(JSONObject obj) {
 		// Get task id (cannot cast to int as json works with strings)
 		int id = Integer.parseInt((String) obj.get(KEY_ID));
 		// Get the title of the task
@@ -270,14 +284,55 @@ public class TaskService extends Service {
 	}
 
 	/**
-	 * Sets a tasks comment using the user token and the
+	 * Updates a task status using the user token and the task
+	 *
+	 * @param token The token for the current user
+	 * @param task  The task to update
+	 */
+	public void updateTaskStatus(String token, Task task) throws IOException, ParseException {
+		updateTaskStatus(token, task.getId(), task.getStatus());
+	}
+
+	/**
+	 * Updates a task status using the user token and the task id
+	 *
+	 * @param token  The token for the current user
+	 * @param id     The unique id for the task
+	 * @param status The status to set for the task
+	 */
+	public void updateTaskStatus(String token, int id, int status) throws IOException, ParseException {
+		// Create the url to submit with the method, token, id and status
+		String url = String.format(URL_METHOD_TEMPLATE, METHOD_UPDATE_STATUS) +
+				String.format(METHOD_UPDATE_STATUS_ARGUMENTS, token, id, status);
+		// Submit the request along with the token
+		// and check if an error was returned
+		if (submit(url) == STATUS_ERROR) {
+			// This should never happen as the token and tasks
+			// are retrieved from the database
+			throw new IllegalStateException(getErrorMessage());
+		}
+	}
+
+	/**
+	 * Updates a task step comment using the user token and the
+	 * task step
+	 *
+	 * @param token The token for the current user
+	 * @param step  The task step to update
+	 */
+	public void updateTaskStepComment(String token, Step step) throws IOException, ParseException {
+		updateTaskStepComment(token, step.getId(), step.getComment());
+	}
+
+	/**
+	 * Updates a task step comment using the user token and the
 	 * task step id
 	 *
 	 * @param token   The token for the current user
 	 * @param id      The unique id for the task step
 	 * @param comment The comment to set for the task step
 	 */
-	public void setTaskStepComment(String token, int id, String comment) {
+	public void updateTaskStepComment(String token, int id, String comment) throws IOException, ParseException {
 		// TODO
 	}
 }

@@ -1,5 +1,7 @@
 package uk.ac.aber.cs221.group15.task;
 
+import javafx.beans.property.*;
+
 /**
  * Represents a single step for a task. A step can
  * be set as completed and contains a comment.
@@ -7,34 +9,45 @@ package uk.ac.aber.cs221.group15.task;
  * have one task
  *
  * @author Darren White
- * @version 0.0.1
+ * @version 0.1.0
  */
 public class Step {
 
 	/**
 	 * The unique id for this task step
 	 */
-	private final int id;
+	private final ReadOnlyIntegerProperty id;
+
 	/**
-	 * The description of the task step
+	 * The title of the task step
 	 */
-	private final String description;
+	private final ReadOnlyStringProperty title;
+
 	/**
 	 * The user comment for the task step
 	 */
-	private String comment;
+	private final StringProperty comment;
 
 	/**
-	 * Creates a new step with the id, description and
+	 * Creates a new step with the id, title and
 	 * the user comment if it exists
 	 *
-	 * @param description The description of the task step
-	 * @param comment     The user comment of the task step
+	 * @param title   The title of the task step
+	 * @param comment The user comment of the task step
 	 */
-	public Step(int id, String description, String comment) {
-		this.id = id;
-		this.description = description;
-		this.comment = comment;
+	public Step(int id, String title, String comment) {
+		this.id = new ReadOnlyIntegerWrapper(id);
+		this.title = new ReadOnlyStringWrapper(title);
+		this.comment = new SimpleStringProperty(comment);
+	}
+
+	/**
+	 * Gets the comment property
+	 *
+	 * @return The comment property
+	 */
+	public StringProperty commentProperty() {
+		return comment;
 	}
 
 	/**
@@ -44,7 +57,7 @@ public class Step {
 	public boolean equals(Object o) {
 		return this == o ||
 				!(o == null || getClass() != o.getClass()) &&
-						getDescription().equals(((Step) o).getDescription());
+						getId() == ((Step) o).getId();
 	}
 
 	/**
@@ -53,16 +66,7 @@ public class Step {
 	 * @return The comment for the step
 	 */
 	public String getComment() {
-		return comment;
-	}
-
-	/**
-	 * Gets the description associated with this task step
-	 *
-	 * @return The desription of this task step
-	 */
-	public String getDescription() {
-		return description;
+		return commentProperty().getValue();
 	}
 
 	/**
@@ -71,7 +75,16 @@ public class Step {
 	 * @return The step id
 	 */
 	public int getId() {
-		return id;
+		return idProperty().getValue();
+	}
+
+	/**
+	 * Gets the title associated with this task step
+	 *
+	 * @return The desription of this task step
+	 */
+	public String getTitle() {
+		return titleProperty().getValue();
 	}
 
 	/**
@@ -79,7 +92,16 @@ public class Step {
 	 */
 	@Override
 	public int hashCode() {
-		return getDescription().hashCode();
+		return getId();
+	}
+
+	/**
+	 * Gets the id property
+	 *
+	 * @return The id property
+	 */
+	public ReadOnlyIntegerProperty idProperty() {
+		return id;
 	}
 
 	/**
@@ -88,6 +110,24 @@ public class Step {
 	 * @param comment The String to set the comment as
 	 */
 	public void setComment(String comment) {
-		this.comment = comment;
+		this.comment.setValue(comment);
+	}
+
+	/**
+	 * Gets the title property
+	 *
+	 * @return The title property
+	 */
+	public ReadOnlyStringProperty titleProperty() {
+		return title;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return "Step{id=" + getId() + ", title='" + getTitle() +
+				"\', comment='" + getComment() + "\'}";
 	}
 }

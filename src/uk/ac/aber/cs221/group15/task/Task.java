@@ -1,6 +1,8 @@
 package uk.ac.aber.cs221.group15.task;
 
-import java.util.Collections;
+import javafx.beans.property.*;
+
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -12,7 +14,7 @@ import java.util.Set;
  * steps.
  *
  * @author Darren White
- * @version 0.0.1
+ * @version 0.1.0
  */
 public class Task {
 
@@ -35,37 +37,44 @@ public class Task {
 	public static final int COMPLETED = 2;
 
 	/**
-	 * This tasks steps which the user can edit
-	 * We use a LinkedHashSet as it preserves the order
-	 * of Steps in the set.
-	 */
-	private final Set<Step> steps = new LinkedHashSet<>();
-
-	/**
 	 * The unique task id
 	 */
-	private final int id;
+	private final ReadOnlyIntegerProperty id;
 
 	/**
 	 * The title of the task
 	 */
-	private final String title;
+	private final ReadOnlyStringProperty title;
 
 	/**
 	 * The member who created this task
 	 */
-	private final String creator;
+	private final ReadOnlyStringProperty creator;
 
 	/**
-	 * Date task was created, expected completion date and
-	 * completition date
+	 * Date task was created
 	 */
-	private final Date dateCreated, dateDue, dateCompleted;
+	private final ReadOnlyObjectProperty<Date> dateCreated;
+
+	/**
+	 * Expected completed date for the task
+	 */
+	private final ReadOnlyObjectProperty<Date> dateDue;
+
+	/**
+	 * Completion date for the task
+	 */
+	private final ObjectProperty<Date> dateCompleted;
 
 	/**
 	 * The current status of the task
 	 */
-	private int status;
+	private final IntegerProperty status;
+
+	/**
+	 * The steps for this task - using a set doesn't allow duplicates
+	 */
+	private final ReadOnlyObjectProperty<Set<Step>> steps;
 
 	/**
 	 * Creates a new task with the given information
@@ -80,36 +89,60 @@ public class Task {
 	 */
 	public Task(int id, String title, String creator, Date dateCreated,
 	            Date dateDue, Date dateCompleted, int status) {
-		this.id = id;
-		this.title = title;
-		this.creator = creator;
-		this.dateCreated = dateCreated;
-		this.dateDue = dateDue;
-		this.dateCompleted = dateCompleted;
-		this.status = status;
+		this.id = new ReadOnlyIntegerWrapper(id);
+		this.title = new ReadOnlyStringWrapper(title);
+		this.creator = new ReadOnlyStringWrapper(creator);
+		this.dateCreated = new ReadOnlyObjectWrapper<>(dateCreated);
+		this.dateDue = new ReadOnlyObjectWrapper<>(dateDue);
+		this.dateCompleted = new SimpleObjectProperty<>(dateCompleted);
+		this.status = new SimpleIntegerProperty(status);
+		// LinkedHashSet preserves order
+		this.steps = new ReadOnlyObjectWrapper<>(new LinkedHashSet<>());
 	}
 
 	/**
-	 * Add a new step for this task - cannot have duplicates (same description)
+	 * Add steps for this task
 	 *
-	 * @param step The step to add
-	 * @return If the step was added
+	 * @param steps The steps to add
 	 */
-	public boolean addStep(Step step) {
-		return steps.add(step);
+	public void addSteps(Collection<? extends Step> steps) {
+		stepsProperty().getValue().addAll(steps);
 	}
 
 	/**
-	 * Creates a new Step with the description and comment and adds it
+	 * Gets the creator property
 	 *
-	 * @param id          The unique id of the step
-	 * @param description The description of the step
-	 * @param comment     The step comment (or null if none)
-	 * @return If the step was added
+	 * @return The member name property
 	 */
-	public boolean addStep(int id, String description, String comment) {
-		// Create the step and add it
-		return steps.add(new Step(id, description, comment));
+	public ReadOnlyStringProperty creatorProperty() {
+		return creator;
+	}
+
+	/**
+	 * Gets the date completed property
+	 *
+	 * @return The date completed property
+	 */
+	public ObjectProperty<Date> dateCompletedProperty() {
+		return dateCompleted;
+	}
+
+	/**
+	 * Gets the date created property
+	 *
+	 * @return The date created property
+	 */
+	public ReadOnlyObjectProperty<Date> dateCreatedProperty() {
+		return dateCreated;
+	}
+
+	/**
+	 * Gets the date due property
+	 *
+	 * @return The date due property
+	 */
+	public ReadOnlyObjectProperty<Date> dateDueProperty() {
+		return dateDue;
 	}
 
 	/**
@@ -118,7 +151,7 @@ public class Task {
 	 * @return The member name
 	 */
 	public String getCreator() {
-		return creator;
+		return creatorProperty().getValue();
 	}
 
 	/**
@@ -127,7 +160,7 @@ public class Task {
 	 * @return The date this task was completed
 	 */
 	public Date getDateCompleted() {
-		return dateCompleted;
+		return dateCompletedProperty().getValue();
 	}
 
 	/**
@@ -136,7 +169,7 @@ public class Task {
 	 * @return The date this task was created
 	 */
 	public Date getDateCreated() {
-		return dateCreated;
+		return dateCreatedProperty().getValue();
 	}
 
 	/**
@@ -145,7 +178,7 @@ public class Task {
 	 * @return The expected completion date
 	 */
 	public Date getDateDue() {
-		return dateDue;
+		return dateDueProperty().getValue();
 	}
 
 	/**
@@ -154,7 +187,7 @@ public class Task {
 	 * @return This tasks id
 	 */
 	public int getId() {
-		return id;
+		return idProperty().getValue();
 	}
 
 	/**
@@ -166,17 +199,35 @@ public class Task {
 	 * @link Task.COMPLETED
 	 */
 	public int getStatus() {
-		return status;
+		return statusProperty().getValue();
 	}
 
 	/**
-	 * Gets all the steps for this task. Note: this
-	 * Set of steps return is unmodifiable.
+	 * Gets the status as a readable string
 	 *
-	 * @return A set of steps (both completed and not)
+	 * @return The status as a string
+	 */
+	public String getStatusString() {
+		// Convert the status integer to readable string
+		switch (getStatus()) {
+			case ABANDONED:
+				return "Abandoned";
+			case ALLOCATED:
+				return "Allocated";
+			case COMPLETED:
+				return "Completed";
+			default:
+				throw new IllegalArgumentException("Invalid status property: " + getStatus());
+		}
+	}
+
+	/**
+	 * Gets the task steps
+	 *
+	 * @return The steps for this task
 	 */
 	public Set<Step> getSteps() {
-		return Collections.unmodifiableSet(steps);
+		return stepsProperty().getValue();
 	}
 
 	/**
@@ -185,7 +236,25 @@ public class Task {
 	 * @return The title of the task
 	 */
 	public String getTitle() {
-		return title;
+		return titleProperty().getValue();
+	}
+
+	/**
+	 * Gets the id property
+	 *
+	 * @return The id property
+	 */
+	public ReadOnlyIntegerProperty idProperty() {
+		return id;
+	}
+
+	/**
+	 * Set the date completed for this task
+	 *
+	 * @param dateCompleted The date this task was completed
+	 */
+	public void setDateCompleted(Date dateCompleted) {
+		this.dateCompleted.setValue(dateCompleted);
 	}
 
 	/**
@@ -200,6 +269,33 @@ public class Task {
 			throw new IllegalArgumentException("Not allowed to set status as ABANDONED!");
 		}
 
-		this.status = status;
+		this.status.setValue(status);
+	}
+
+	/**
+	 * The current status property of this task
+	 *
+	 * @return The current status property
+	 */
+	public IntegerProperty statusProperty() {
+		return status;
+	}
+
+	/**
+	 * Gets the steps property
+	 *
+	 * @return The steps property
+	 */
+	public ReadOnlyObjectProperty<Set<Step>> stepsProperty() {
+		return steps;
+	}
+
+	/**
+	 * Gets the title property
+	 *
+	 * @return The title property
+	 */
+	public ReadOnlyStringProperty titleProperty() {
+		return title;
 	}
 }

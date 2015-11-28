@@ -1,5 +1,6 @@
 package uk.ac.aber.cs221.group15.service;
 
+import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
@@ -9,7 +10,7 @@ import java.io.IOException;
  * request to the database and retrieve the token
  *
  * @author Darren White
- * @version 0.0.1
+ * @version 0.0.2
  */
 public class LoginService extends Service {
 
@@ -41,7 +42,7 @@ public class LoginService extends Service {
 		}
 
 		// Get the token and return it
-		return (String) getResponse().get(KEY_TOKEN);
+		return (String) ((JSONObject) getResponse()).get(KEY_TOKEN);
 	}
 
 	/**

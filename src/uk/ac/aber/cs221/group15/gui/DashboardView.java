@@ -1,7 +1,6 @@
 package uk.ac.aber.cs221.group15.gui;
 
 import javafx.beans.binding.Bindings;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -9,15 +8,11 @@ import javafx.geometry.VPos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import org.json.simple.parser.ParseException;
-import uk.ac.aber.cs221.group15.service.TaskService;
 import uk.ac.aber.cs221.group15.task.Task;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -30,7 +25,7 @@ import java.util.concurrent.Callable;
  * upcoming tasks and a few major details
  *
  * @author Darren White
- * @version 0.0.5
+ * @version 0.0.6
  */
 public class DashboardView extends GridPane {
 
@@ -45,24 +40,26 @@ public class DashboardView extends GridPane {
 	private static final int MAX_TASKS = 10;
 
 	/**
-	 * The service used to submit requests to list all tasks
-	 */
-	private static final TaskService service = new TaskService();
-
-	/**
 	 * The list to store all the user tasks
 	 */
-	private final ObservableList<Task> tasks = FXCollections.observableArrayList();
+	private final ObservableList<Task> tasks;
 
 	/**
 	 * Creates a new Dashboard
 	 *
 	 * @param token The token for the current user
+	 * @param tasks The tasks for the user
 	 */
-	public DashboardView(String token) {
+	public DashboardView(String token, ObservableList<Task> tasks) {
+		this.tasks = tasks;
 		init(token);
 	}
 
+	/**
+	 * Creates the stat panes to be displayed on the dashboard
+	 *
+	 * @return The list of stat panes
+	 */
 	private List<StatPane> createStatPanes() {
 		// Store panes in a list
 		List<StatPane> panes = new ArrayList<>();
@@ -141,29 +138,37 @@ public class DashboardView extends GridPane {
 		table.itemsProperty().bind(Bindings.createObjectBinding(() ->
 				tasks.filtered(t -> tasks.indexOf(t) < MAX_TASKS), tasks));
 
-		// Create three columns: task, due date, and member
+		// Create columns: task, due date, member, and status
 		TableColumn<Task, String> titleCol = new TableColumn<>("Task");
 		TableColumn<Task, Date> dueDateCol = new TableColumn<>("Due date");
 		TableColumn<Task, String> creatorCol = new TableColumn<>("Assigned by");
+		TableColumn<Task, String> statusCol = new TableColumn<>("Status");
 
 		// Set each of the cell value factories (which fields they
 		// correspond to in the Task class)
-		titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
-		dueDateCol.setCellValueFactory(new PropertyValueFactory<>("dateDue"));
-		creatorCol.setCellValueFactory(new PropertyValueFactory<>("creator"));
+		titleCol.setCellValueFactory(t -> t.getValue().titleProperty());
+		dueDateCol.setCellValueFactory(t -> t.getValue().dateDueProperty());
+		creatorCol.setCellValueFactory(t -> t.getValue().creatorProperty());
+		// Convert the status integer to readable string
+		statusCol.setCellValueFactory(t -> Bindings.createStringBinding(() ->
+						t.getValue().getStatusString(),
+				t.getValue().statusProperty()));
 
 		// Set the column dyanmic sizes
-		// Title col - 40% width (subtract 2 so that the horizontal scrollbar doesn't show)
-		// Due date col - 30% width
-		// Creator name col - 30% width
-		titleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.4).subtract(2));
-		dueDateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
-		creatorCol.prefWidthProperty().bind(table.widthProperty().multiply(0.3));
+		// Title col - 35% width (subtract 2 so that the horizontal scrollbar doesn't show)
+		// Due date col - 25% width
+		// Creator name col - 25% width
+		// Status col - 15% width
+		titleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.35).subtract(2));
+		dueDateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
+		creatorCol.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
+		statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
 
-		// Add the three columns to the table
+		// Add the columns to the table
 		table.getColumns().add(titleCol);
 		table.getColumns().add(dueDateCol);
 		table.getColumns().add(creatorCol);
+		table.getColumns().add(statusCol);
 
 		// Return the new table created
 		return table;
@@ -181,13 +186,6 @@ public class DashboardView extends GridPane {
 		setPadding(new Insets(10));
 		setHgap(0);
 		setVgap(10);
-
-		try {
-			// Try and load the tasks from the database
-			tasks.addAll(service.getTasks(token));
-		} catch (IOException | ParseException e) {
-			e.printStackTrace();
-		}
 
 		// Creates the panes for the statistics
 		List<StatPane> panes = createStatPanes();

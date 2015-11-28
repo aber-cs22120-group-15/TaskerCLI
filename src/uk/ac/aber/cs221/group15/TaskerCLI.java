@@ -16,7 +16,7 @@ import java.nio.file.Paths;
  * will then show the main window
  *
  * @author Darren White
- * @version 0.0.2
+ * @version 0.0.3
  */
 public class TaskerCLI extends Application {
 
@@ -127,6 +127,8 @@ public class TaskerCLI extends Application {
 		// Set the primary stage scene and the default title
 		stage.setScene(scene);
 		stage.setTitle(APP_NAME);
+		// Maximize the window
+		stage.setMaximized(true);
 		// Show main overview window
 		stage.show();
 	}

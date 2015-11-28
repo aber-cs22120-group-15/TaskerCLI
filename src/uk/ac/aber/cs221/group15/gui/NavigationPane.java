@@ -1,17 +1,24 @@
 package uk.ac.aber.cs221.group15.gui;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import org.json.simple.parser.ParseException;
 import uk.ac.aber.cs221.group15.TaskerCLI;
+import uk.ac.aber.cs221.group15.service.TaskService;
+import uk.ac.aber.cs221.group15.task.Task;
+
+import java.io.IOException;
 
 /**
  * This class allows navigation between different views
  * where the current view will be at index 0 of the StackPane
  *
  * @author Darren White
- * @version 0.0.4
+ * @version 0.0.5
  */
 public class NavigationPane extends GridPane {
 
@@ -19,6 +26,11 @@ public class NavigationPane extends GridPane {
 	 * The height for each navigation item
 	 */
 	private static final int NAV_ITEM_HEIGHT = 50;
+
+	/**
+	 * The service used to submit requests to get task steps
+	 */
+	private static final TaskService service = new TaskService();
 
 	/**
 	 * Creates a new navigation pane using the StackPane
@@ -38,9 +50,46 @@ public class NavigationPane extends GridPane {
 	 * @param token The token for the current user
 	 */
 	private void init(StackPane stack, String token) {
+		// The set of tasks in the overview
+		ObservableList<Task> tasks = FXCollections.observableArrayList();
+
+		// TODO Local storage and sync
+
+		/*
+		--- LOCAL STORAGE ---
+		If local sotrage exists {
+			load it
+		} else {
+			load from database if we can
+		}
+
+		--- SYNC ---
+		Do this on start and after editing or every 5 mins if not edited
+		Load tasks from database if possible
+			Check for additions - add them to local copy
+			Check for deletions (abandoned) - update them
+		Check for local editted tasks - submit updates if possible
+			Maybe set a boolean editted for each task?
+
+
+		--- LOCAL STORAGE ---
+		On exit store tasks locally
+		 */
+
+		// Load tasks from the database in the background
+		new Thread(() -> {
+			try {
+				// Try and load the tasks from the database
+				service.getTasks(token, tasks);
+			} catch (IOException | ParseException e) {
+				System.err.println("Unable to load tasks from database");
+				e.printStackTrace();
+			}
+		}).start();
+
 		// Initialize the different views
-		DashboardView db = new DashboardView(token);
-		TaskView tasks = new TaskView(token);
+		DashboardView dbv = new DashboardView(token, tasks);
+		TaskView tv = new TaskView(token, tasks);
 
 		// Set id for css
 		setId("nav-pane");
@@ -52,13 +101,13 @@ public class NavigationPane extends GridPane {
 		// The navigation link to the Dashboard view
 		NavButton paneDb = new NavButton("Dashboard");
 		// Mouse EventHandler for on click to change the view to the dashboard
-		paneDb.setOnMouseClicked(e -> setCurrentView(paneDb, stack, db));
+		paneDb.setOnMouseClicked(e -> setCurrentView(paneDb, stack, dbv));
 		add(paneDb, 0, 0);
 
 		// The navigation link to the Tasks view
 		NavButton paneTasks = new NavButton("Tasks");
 		// Mouse EventHandle for the tasks view
-		paneTasks.setOnMouseClicked(e -> setCurrentView(paneTasks, stack, tasks));
+		paneTasks.setOnMouseClicked(e -> setCurrentView(paneTasks, stack, tv));
 		add(paneTasks, 0, 1);
 
 		// The logout button (label in this case)
@@ -96,7 +145,7 @@ public class NavigationPane extends GridPane {
 		getRowConstraints().addAll(rw0, rw1, rw2);
 
 		// Set the current view as the dashboard
-		setCurrentView(paneDb, stack, db);
+		setCurrentView(paneDb, stack, dbv);
 	}
 
 	/**
@@ -163,9 +212,8 @@ public class NavigationPane extends GridPane {
 			// Make the button fill its cell
 			setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 			// On mouse click unselect all other NavButtons
-			setOnMouseReleased(e -> NavigationPane.this.getChildren().stream().filter(n -> n instanceof NavButton).forEach(n -> {
-				((NavButton) n).setSelected(false);
-			}));
+			setOnMouseReleased(e -> NavigationPane.this.getChildren().stream().filter(n ->
+					n instanceof NavButton).forEach(n -> ((NavButton) n).setSelected(false)));
 		}
 	}
 }
