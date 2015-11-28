@@ -33,6 +33,11 @@
     -fx-font-size: 72;
 }
 
+#lbl-all-tasks {
+    -fx-font-size: 18;
+    -fx-font-weight: bold;
+}
+
 #lbl-banner {
     -fx-font-size: 20;
     -fx-text-fill: rgb(40, 140, 255);

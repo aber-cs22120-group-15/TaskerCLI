@@ -3,7 +3,9 @@ package uk.ac.aber.cs221.group15.gui;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -12,6 +14,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
+import javafx.scene.text.TextAlignment;
 import org.json.simple.parser.ParseException;
 import uk.ac.aber.cs221.group15.service.TaskService;
 import uk.ac.aber.cs221.group15.task.Task;
@@ -152,23 +155,36 @@ public class TaskView extends GridPane {
 			e.printStackTrace();
 		}
 
-		// Create the task table
-		TableView<Task> taskTable = createTaskTable(tasks);
+		// The caption for the table
+		Label lblTableCaption = new Label("All Tasks\nDouble-click a task for more detail");
+		// Set the id for css
+		lblTableCaption.setId("lbl-all-tasks");
+		// Center the text
+		lblTableCaption.setTextAlignment(TextAlignment.CENTER);
+		// Center it
+		GridPane.setHalignment(lblTableCaption, HPos.CENTER);
+		// Add it above the table
+		add(lblTableCaption, 0, 0);
 
-		add(taskTable, 0, 0);
+		// Create the task table and add it
+		add(createTaskTable(tasks), 0, 1);
 
 		// Column 0 - fill everything
 		ColumnConstraints cc0 = new ColumnConstraints();
 		cc0.setHgrow(Priority.ALWAYS);
 
-		// Change the column size
+		// Change the column sizes
 		getColumnConstraints().add(cc0);
 
-		// Row 0 - fill everything
+		// Row 0 - table caption (fit to label size)
 		RowConstraints rw0 = new RowConstraints();
-		rw0.setVgrow(Priority.ALWAYS);
+		rw0.setVgrow(Priority.NEVER);
 
-		// Change the row size
-		getRowConstraints().add(rw0);
+		// Row 0 - tasks table (fill remaining height)
+		RowConstraints rw1 = new RowConstraints();
+		rw1.setVgrow(Priority.ALWAYS);
+
+		// Change the row sizes
+		getRowConstraints().addAll(rw0, rw1);
 	}
 }

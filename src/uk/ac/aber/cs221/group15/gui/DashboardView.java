@@ -67,6 +67,15 @@ public class DashboardView extends GridPane {
 		// Store panes in a list
 		List<StatPane> panes = new ArrayList<>();
 
+		// The total tasks statistic
+		Callable<Integer> totalTasks = tasks::size;
+		// The color for the total tasks stat
+		Callable<Paint> totalColor = () -> Color.rgb(40, 140, 255);
+
+		// Add the total takes stat
+		panes.add(new StatPane("Total Tasks", totalTasks,
+				totalColor, tasks));
+
 		// The outstanding tasks statistic
 		Callable<Integer> outstandingTasks = () -> {
 			// The current date
@@ -188,31 +197,27 @@ public class DashboardView extends GridPane {
 			add(panes.get(i), i, 0);
 		}
 
-		// Create and add the table to the second row (row 1),
-		// in the first column (col 0)
-		// and allow it to span two columns and one row
-		add(createTaskTable(), 0, 2, 2, 1);
-
 		// The caption for the table
-		Label lblTableCaption = new Label("Tasks Overview");
+		Label lblTableCaption = new Label("Upcoming " + MAX_TASKS + " Tasks");
 		// Set the id for css
 		lblTableCaption.setId("lbl-task-overview");
 		// Center it
 		GridPane.setHalignment(lblTableCaption, HPos.CENTER);
 		// Add it below the stat panes and above the table
-		// allowing it to span two columns and one row
-		add(lblTableCaption, 0, 1, 2, 1);
+		// allowing it to span all columns and one row
+		add(lblTableCaption, 0, 1, panes.size(), 1);
 
-		// Column 0 - for outstanding tasks (50% width)
-		ColumnConstraints cc0 = new ColumnConstraints();
-		cc0.setPercentWidth(50);
+		// Create and add the table to the second row (row 1),
+		// in the first column (col 0)
+		// and allow it to span all columns and one row
+		add(createTaskTable(), 0, 2, panes.size(), 1);
 
-		// Column 1 - for overdue tasks (50% width)
-		ColumnConstraints cc1 = new ColumnConstraints();
-		cc1.setPercentWidth(50);
-
-		// Change the column sizes
-		getColumnConstraints().addAll(cc0, cc1);
+		// Make each column equidistant for each panel
+		for (int i = 0; i < panes.size(); i++) {
+			ColumnConstraints cc = new ColumnConstraints();
+			cc.setPercentWidth(100 / panes.size());
+			getColumnConstraints().add(cc);
+		}
 
 		// Row 0 - The four statistic panels (fixed width)
 		RowConstraints rw0 = new RowConstraints();
