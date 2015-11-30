@@ -2,7 +2,6 @@ package uk.ac.aber.cs221.group15.task;
 
 import javafx.beans.property.*;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -14,7 +13,7 @@ import java.util.Set;
  * steps.
  *
  * @author Darren White
- * @version 0.1.0
+ * @version 0.1.2
  */
 public class Task {
 
@@ -101,12 +100,12 @@ public class Task {
 	}
 
 	/**
-	 * Add steps for this task
+	 * Add a step to this task
 	 *
-	 * @param steps The steps to add
+	 * @param step The step to add
 	 */
-	public void addSteps(Collection<? extends Step> steps) {
-		stepsProperty().getValue().addAll(steps);
+	public void addStep(Step step) {
+		stepsProperty().getValue().add(step);
 	}
 
 	/**

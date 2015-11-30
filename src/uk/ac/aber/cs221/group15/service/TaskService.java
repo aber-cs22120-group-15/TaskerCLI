@@ -1,6 +1,5 @@
 package uk.ac.aber.cs221.group15.service;
 
-import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -11,15 +10,14 @@ import uk.ac.aber.cs221.group15.task.Task;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * This service provides functionality to submit a request
  * to get all tasks for a user using the unique token
  *
  * @author Darren White
- * @version 0.0.4
+ * @version 0.1.0
  */
 public class TaskService extends Service {
 
@@ -45,7 +43,7 @@ public class TaskService extends Service {
 	 * The extra arguments needed for the method to submit.
 	 * The user token/key is needed and a task id to get the task steps.
 	 */
-	private static final String METHOD_GET_STEPS_ARGUMENTS = "&token=%s&id=%d";
+	private static final String METHOD_GET_STEPS_ARGUMENTS = "&token=%s&id=%s";
 
 	/**
 	 * The method to submit in the final url to list
@@ -131,20 +129,22 @@ public class TaskService extends Service {
 			new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
 	/**
-	 * Gets the steps for a specific task using the
-	 * user token and the task id
+	 * Adds the steps to each task in the specified list using the
+	 * user login token
 	 *
+	 * @param tasks The list of tasks to add steps to
 	 * @param token The token for the current user
-	 * @param id    The unique id for the task
-	 * @return The steps associated with the task with the id
 	 */
-	public Set<Step> getTaskSteps(String token, int id) throws IOException, ParseException {
-		// Use a LinkedHashSet so no duplicates are added
-		// and ordering is preserved
-		Set<Step> steps = new LinkedHashSet<>();
-		// Create the url to submit with the method, and token
+	private void addTaskSteps(List<Task> tasks, String token) throws IOException, ParseException {
+		// All the task ids concataned and separated with commas
+		StringBuilder ids = new StringBuilder();
+
+		// Append the task ids to the string
+		tasks.forEach(t -> ids.append(t.getId()).append(','));
+
+		// Create the url to submit with the method, token and task ids
 		String url = String.format(URL_METHOD_TEMPLATE, METHOD_GET_STEPS) +
-				String.format(METHOD_GET_STEPS_ARGUMENTS, token, id);
+				String.format(METHOD_GET_STEPS_ARGUMENTS, token, ids.toString());
 		// Submit the request along with the token
 		int status = submit(url);
 
@@ -157,20 +157,23 @@ public class TaskService extends Service {
 		} else if (status == STATUS_SUCCESS) {
 			// Get the response object
 			JSONObject response = (JSONObject) getResponse();
-			// Get the list of tasks as an array
-			JSONArray stepList = (JSONArray) response.get(KEY_STEPS);
+			// Get all the steps from the response object
+			JSONObject stepList = (JSONObject) response.get(KEY_STEPS);
 
-			// Iterate over the tasks
-			for (Object o : stepList) {
-				// Each object is a JSON object
-				JSONObject obj = (JSONObject) o;
+			// Iterate all tasks to add its steps
+			for (Task task : tasks) {
+				// Get the array of steps with the task id
+				// JSON uses string for keys so wrap the id in a string
+				JSONArray stepsArray = (JSONArray) stepList.get(String.valueOf(task.getId()));
 
-				// Parse the step and add it to the set
-				steps.add(parseStep(obj));
+				// Iterate all the steps
+				for (Object step : stepsArray) {
+					// Each step is a JSONObject
+					// Parse the step and add it to the task
+					task.addStep(parseStep((JSONObject) step));
+				}
 			}
 		}
-
-		return steps;
 	}
 
 	/**
@@ -181,7 +184,7 @@ public class TaskService extends Service {
 	 * @throws IOException    If an I/O exception occurs
 	 * @throws ParseException If a Parse exception occurs
 	 */
-	public void getTasks(String token, ObservableList<Task> tasks) throws IOException, ParseException {
+	public void getTasks(ObservableList<Task> tasks, String token) throws IOException, ParseException {
 		// Create the url to submit with the method, and token
 		String url = String.format(URL_METHOD_TEMPLATE, METHOD_LIST_TASKS) +
 				String.format(METHOD_LIST_TASKS_ARGUMENTS, token);
@@ -207,14 +210,13 @@ public class TaskService extends Service {
 				// Parse the task
 				Task task = parseTask(obj);
 
-				// Get the task steps
-				task.addSteps(getTaskSteps(token, task.getId()));
-
 				// Add it to the list
-				// Run on the JavaFX thread so it can update the table
-				Platform.runLater(() -> tasks.add(task));
+				tasks.add(task);
 			}
 		}
+
+		// Add the task steps for all tasks
+		addTaskSteps(tasks, token);
 	}
 
 	/**
@@ -333,6 +335,6 @@ public class TaskService extends Service {
 	 * @param comment The comment to set for the task step
 	 */
 	public void updateTaskStepComment(String token, int id, String comment) throws IOException, ParseException {
-		// TODO
+		// TODO Submit the step id and the new editted comment
 	}
 }

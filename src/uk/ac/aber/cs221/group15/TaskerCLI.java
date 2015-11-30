@@ -16,7 +16,7 @@ import java.nio.file.Paths;
  * will then show the main window
  *
  * @author Darren White
- * @version 0.0.3
+ * @version 0.0.4
  */
 public class TaskerCLI extends Application {
 
@@ -54,8 +54,7 @@ public class TaskerCLI extends Application {
 		if (in == null) {
 			try {
 				in = Paths.get(path).toUri().toURL();
-			} catch (MalformedURLException e) {
-				return null;
+			} catch (MalformedURLException ignored) {
 			}
 		}
 

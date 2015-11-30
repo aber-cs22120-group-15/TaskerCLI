@@ -1,5 +1,6 @@
 package uk.ac.aber.cs221.group15.gui;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -18,7 +19,7 @@ import java.io.IOException;
  * where the current view will be at index 0 of the StackPane
  *
  * @author Darren White
- * @version 0.0.5
+ * @version 0.0.6
  */
 public class NavigationPane extends GridPane {
 
@@ -77,18 +78,19 @@ public class NavigationPane extends GridPane {
 		 */
 
 		// Load tasks from the database in the background
-		new Thread(() -> {
+		// Run on the JavaFX thread when adding the tasks
+		new Thread(() -> Platform.runLater(() -> {
 			try {
 				// Try and load the tasks from the database
-				service.getTasks(token, tasks);
+				service.getTasks(tasks, token);
 			} catch (IOException | ParseException e) {
 				System.err.println("Unable to load tasks from database");
 				e.printStackTrace();
 			}
-		}).start();
+		})).start();
 
 		// Initialize the different views
-		DashboardView dbv = new DashboardView(token, tasks);
+		DashboardView dv = new DashboardView(token, tasks);
 		TaskView tv = new TaskView(token, tasks);
 
 		// Set id for css
@@ -101,7 +103,7 @@ public class NavigationPane extends GridPane {
 		// The navigation link to the Dashboard view
 		NavButton paneDb = new NavButton("Dashboard");
 		// Mouse EventHandler for on click to change the view to the dashboard
-		paneDb.setOnMouseClicked(e -> setCurrentView(paneDb, stack, dbv));
+		paneDb.setOnMouseClicked(e -> setCurrentView(paneDb, stack, dv));
 		add(paneDb, 0, 0);
 
 		// The navigation link to the Tasks view
@@ -123,19 +125,16 @@ public class NavigationPane extends GridPane {
 		// Change the column size
 		getColumnConstraints().add(cc0);
 
-		// Row 0 - The four statistic panels (fixed width at 200px)
 		// Each nav section has the same height
 		RowConstraints rw0 = new RowConstraints();
 		rw0.setMinHeight(NAV_ITEM_HEIGHT);
 		rw0.setMaxHeight(NAV_ITEM_HEIGHT);
 
-		// Row 1 - tasks overview table (fill remaining height)
 		// Each nav section has the same height
 		RowConstraints rw1 = new RowConstraints();
 		rw1.setMinHeight(NAV_ITEM_HEIGHT);
 		rw1.setMaxHeight(NAV_ITEM_HEIGHT);
 
-		// Row 1 - tasks overview table (fill remaining height)
 		// Each nav section has the same height
 		RowConstraints rw2 = new RowConstraints();
 		rw2.setMinHeight(NAV_ITEM_HEIGHT);
@@ -145,7 +144,7 @@ public class NavigationPane extends GridPane {
 		getRowConstraints().addAll(rw0, rw1, rw2);
 
 		// Set the current view as the dashboard
-		setCurrentView(paneDb, stack, dbv);
+		setCurrentView(paneDb, stack, dv);
 	}
 
 	/**
