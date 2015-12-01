@@ -1,6 +1,5 @@
 package uk.ac.aber.cs221.group15.gui;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -13,13 +12,14 @@ import uk.ac.aber.cs221.group15.service.TaskService;
 import uk.ac.aber.cs221.group15.task.Task;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 /**
  * This class allows navigation between different views
  * where the current view will be at index 0 of the StackPane
  *
  * @author Darren White
- * @version 0.0.6
+ * @version 0.0.7
  */
 public class NavigationPane extends GridPane {
 
@@ -52,14 +52,13 @@ public class NavigationPane extends GridPane {
 	 */
 	private void init(StackPane stack, String token) {
 		// The set of tasks in the overview
-		ObservableList<Task> tasks = FXCollections.observableArrayList();
+		ObservableList<Task> tasks = FXCollections.observableList(new LinkedList<>());
 
 		// TODO If changes are found locally then if we are online submit them
 		// TODO If we are offline load local tasks otherwise load from online
 
 		// Load tasks from the database in the background
-		// Run on the JavaFX thread when adding the tasks
-		new Thread(() -> Platform.runLater(() -> {
+		new Thread(() -> {
 			try {
 				// Try and load the tasks from the database
 				service.getTasks(tasks, token);
@@ -67,7 +66,7 @@ public class NavigationPane extends GridPane {
 				System.err.println("Unable to load tasks from database");
 				e.printStackTrace();
 			}
-		})).start();
+		}).start();
 
 		// Initialize the different views
 		DashboardView dv = new DashboardView(token, tasks);

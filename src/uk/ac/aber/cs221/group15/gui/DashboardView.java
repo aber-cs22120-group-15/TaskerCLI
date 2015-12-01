@@ -25,7 +25,7 @@ import java.util.concurrent.Callable;
  * upcoming tasks and a few major details
  *
  * @author Darren White
- * @version 0.0.6
+ * @version 0.0.7
  */
 public class DashboardView extends GridPane {
 
@@ -52,6 +52,7 @@ public class DashboardView extends GridPane {
 	 */
 	public DashboardView(String token, ObservableList<Task> tasks) {
 		this.tasks = tasks;
+
 		init(token);
 	}
 
@@ -70,8 +71,7 @@ public class DashboardView extends GridPane {
 		Callable<Paint> totalColor = () -> Color.rgb(40, 140, 255);
 
 		// Add the total takes stat
-		panes.add(new StatPane("Total Tasks", totalTasks,
-				totalColor, tasks));
+		panes.add(new StatPane("Total Tasks", totalTasks, totalColor));
 
 		// The outstanding tasks statistic
 		Callable<Integer> outstandingTasks = () -> {
@@ -97,8 +97,7 @@ public class DashboardView extends GridPane {
 		};
 
 		// Add the outstanding takes stat
-		panes.add(new StatPane("Outstanding Tasks", outstandingTasks,
-				outstandingColor, tasks));
+		panes.add(new StatPane("Outstanding Tasks", outstandingTasks, outstandingColor));
 
 		// The statistic value for overdue tasks
 		Callable<Integer> overdueTasks = () -> {
@@ -121,7 +120,7 @@ public class DashboardView extends GridPane {
 		};
 
 		// The overdue tasks statistic
-		panes.add(new StatPane("Overdue Tasks", overdueTasks, overdueColor, tasks));
+		panes.add(new StatPane("Overdue Tasks", overdueTasks, overdueColor));
 
 		// Return the stat panes
 		return panes;
@@ -135,8 +134,8 @@ public class DashboardView extends GridPane {
 	private TableView<Task> createTaskTable() {
 		// Create the task table for an overview of tasks
 		TableView<Task> table = new TableView<>();
-		table.itemsProperty().bind(Bindings.createObjectBinding(() ->
-				tasks.filtered(t -> tasks.indexOf(t) < MAX_TASKS), tasks));
+
+		table.itemsProperty().bind(Bindings.createObjectBinding(() -> tasks.filtered(t -> tasks.indexOf(t) < MAX_TASKS), tasks));
 
 		// Create columns: task, due date, member, and status
 		TableColumn<Task, String> titleCol = new TableColumn<>("Task");
@@ -255,10 +254,8 @@ public class DashboardView extends GridPane {
 		 * @param caption   The caption for the stat
 		 * @param statFunc  A function used to get the statistic value
 		 * @param colorFunc A function used to get the statistic color
-		 * @param tasks     The tasks list to bind to
 		 */
-		private StatPane(String caption, Callable<Integer> statFunc,
-		                 Callable<Paint> colorFunc, ObservableList<Task> tasks) {
+		private StatPane(String caption, Callable<Integer> statFunc, Callable<Paint> colorFunc) {
 			// Add the styleclass for css
 			getStyleClass().add("stat-pane");
 			// Create a label for the caption

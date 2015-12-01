@@ -1,5 +1,6 @@
 package uk.ac.aber.cs221.group15.service;
 
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -10,14 +11,13 @@ import uk.ac.aber.cs221.group15.task.Task;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 /**
  * This service provides functionality to submit a request
  * to get all tasks for a user using the unique token
  *
  * @author Darren White
- * @version 0.1.1
+ * @version 0.1.2
  */
 public class TaskService extends Service {
 
@@ -120,7 +120,7 @@ public class TaskService extends Service {
 	 * @param tasks The list of tasks to add steps to
 	 * @param token The token for the current user
 	 */
-	private void addTaskSteps(List<Task> tasks, String token) throws IOException, ParseException {
+	private void addTaskSteps(ObservableList<Task> tasks, String token) throws IOException, ParseException {
 		// All the task ids concataned and separated with commas
 		StringBuilder ids = new StringBuilder();
 
@@ -194,12 +194,23 @@ public class TaskService extends Service {
 				Task task = parseTask(obj);
 
 				// Add it to the list
-				tasks.add(task);
+				// Run on the JavaFX thread to update the ui
+				Platform.runLater(() -> tasks.add(task));
 			}
-		}
 
-		// Add the task steps for all tasks
-		addTaskSteps(tasks, token);
+			// Ensure all tasks have been added before getting
+			// the steps - this is due to adding the tasks to the
+			// list while on the JavaFX thread
+			while (tasks.size() != taskList.size()) {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException ignored) {
+				}
+			}
+
+			// Add the task steps for all tasks
+			addTaskSteps(tasks, token);
+		}
 	}
 
 	/**

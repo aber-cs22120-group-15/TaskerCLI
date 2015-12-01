@@ -85,7 +85,6 @@ public class Login extends Stage {
 		setResizable(false);
 		// Set the title of the window
 		setTitle(APP_NAME);
-
 		// Initialize the components
 		init();
 	}

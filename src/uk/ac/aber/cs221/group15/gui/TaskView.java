@@ -46,6 +46,7 @@ public class TaskView extends GridPane {
 	 */
 	public TaskView(String token, ObservableList<Task> tasks) {
 		this.tasks = tasks;
+
 		init(token);
 	}
 
@@ -64,9 +65,9 @@ public class TaskView extends GridPane {
 			// Create the row
 			TableRow<Task> tr = new TableRow<>();
 			// Add mouse event
-			tr.setOnMouseClicked(event -> {
+			tr.setOnMouseClicked(e -> {
 				// On double click on a row with a task
-				if (event.getClickCount() == 2 && !tr.isEmpty()) {
+				if (e.getClickCount() == 2 && !tr.isEmpty()) {
 					// Show task details window
 					TaskDetail taskDetail = new TaskDetail(getScene().getWindow(), token, tr.getItem());
 					taskDetail.sizeToScene();
