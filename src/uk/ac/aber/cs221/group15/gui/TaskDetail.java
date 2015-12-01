@@ -33,7 +33,7 @@ import java.util.Set;
  * set tasks as completed (or uncompleted)
  *
  * @author Darren White
- * @version 0.1.0
+ * @version 0.1.1
  */
 public class TaskDetail extends Stage {
 
@@ -59,6 +59,7 @@ public class TaskDetail extends Stage {
 
 	/**
 	 * Used to check if any comments have been edited
+	 * or the status has changed
 	 */
 	private boolean edited = false;
 
@@ -193,7 +194,7 @@ public class TaskDetail extends Stage {
 				task.setDateCompleted(null);
 			} else if (!setTaskCompleted(steps)) {
 				// Show error text
-				lblErr.setText("Must provide descriptions for each step!");
+				lblErr.setText("Must provide comments for each step!");
 			}
 
 			// Task status changed
@@ -213,7 +214,7 @@ public class TaskDetail extends Stage {
 				// Close this window
 				close();
 			} catch (IOException | ParseException ex) {
-				lblErr.setText("Unable to save changes!");
+				lblErr.setText("Unable to save changes: " + ex.getLocalizedMessage());
 				ex.printStackTrace();
 			}
 		});
@@ -253,8 +254,12 @@ public class TaskDetail extends Stage {
 			return;
 		}
 
-		// Update the task status
-		service.updateTaskStatus(token, task);
+		// TODO If we are offline save changes locally
+
+		// Update the task status if it has changed
+		if (task.getStatus() != initialStatus) {
+			service.updateTaskStatus(token, task);
+		}
 
 		// Update all the task steps
 		for (Step s : steps) {

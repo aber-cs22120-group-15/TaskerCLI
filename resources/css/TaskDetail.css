@@ -3,12 +3,16 @@
 }
 
 .label {
-    -fx-font-size: 12;
     -fx-font-weight: bold;
 }
 
 #btn-completed {
     -fx-alignment: center;
+}
+
+#lbl-err {
+    -fx-font-weight: normal;
+    -fx-text-fill: rgb(255, 0, 0);
 }
 
 #lbl-task-title {

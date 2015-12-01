@@ -220,6 +220,8 @@ public class Login extends Stage {
 	 */
 	private void login(String email, String pwd, boolean remember) {
 		try {
+			// TODO If we are offline, offer an offline mode if local storage exists
+
 			// Submit the email and password
 			// and store the token is successful (null if error)
 			token = service.login(email, pwd);

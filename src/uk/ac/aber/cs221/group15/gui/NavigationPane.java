@@ -54,28 +54,8 @@ public class NavigationPane extends GridPane {
 		// The set of tasks in the overview
 		ObservableList<Task> tasks = FXCollections.observableArrayList();
 
-		// TODO Local storage and sync
-
-		/*
-		--- LOCAL STORAGE ---
-		If local sotrage exists {
-			load it
-		} else {
-			load from database if we can
-		}
-
-		--- SYNC ---
-		Do this on start and after editing or every 5 mins if not edited
-		Load tasks from database if possible
-			Check for additions - add them to local copy
-			Check for deletions (abandoned) - update them
-		Check for local editted tasks - submit updates if possible
-			Maybe set a boolean editted for each task?
-
-
-		--- LOCAL STORAGE ---
-		On exit store tasks locally
-		 */
+		// TODO If changes are found locally then if we are online submit them
+		// TODO If we are offline load local tasks otherwise load from online
 
 		// Load tasks from the database in the background
 		// Run on the JavaFX thread when adding the tasks

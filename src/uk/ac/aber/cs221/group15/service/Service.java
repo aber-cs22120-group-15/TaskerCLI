@@ -12,7 +12,7 @@ import java.net.URL;
  * This class sends requests to the database server
  *
  * @author Darren White
- * @version 0.0.2
+ * @version 0.1.0
  */
 public abstract class Service {
 
@@ -32,9 +32,9 @@ public abstract class Service {
 	protected static final String URL_BASE = "http://users.aber.ac.uk/dkm2/TaskerMAN/";
 
 	/**
-	 * The base api url with the method suffix (and %s for the method)
+	 * The base api url
 	 */
-	protected static final String URL_METHOD_TEMPLATE = URL_BASE + "api.php?method=%s";
+	protected static final String URL_API = URL_BASE + "api.php";
 
 	/**
 	 * The key attribute to get the error object

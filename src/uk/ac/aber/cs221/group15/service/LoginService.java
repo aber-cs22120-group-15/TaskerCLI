@@ -10,25 +10,21 @@ import java.io.IOException;
  * request to the database and retrieve the token
  *
  * @author Darren White
- * @version 0.0.2
+ * @version 0.0.3
  */
 public class LoginService extends Service {
 
 	/**
-	 * The method to submit in the final url
+	 * The method to submit in the final url with the
+	 * email and password arguments
 	 */
-	private static final String METHOD_NAME = "login";
-
-	/**
-	 * The extra arguments needed for the method to submit.
-	 * Email and password are needed to login.
-	 */
-	private static final String METHOD_ARGUMENTS = "&email=%s&password=%s";
+	private static final String URL_LOGIN = URL_API +
+			"?method=login&email=%s&password=%s";
 
 	/**
 	 * The key attribute to get the token value
 	 */
-	private static final String KEY_TOKEN = "key";
+	private static final String KEY_USER_TOKEN = "key";
 
 	/**
 	 * Gets the user token for future database requests
@@ -42,7 +38,7 @@ public class LoginService extends Service {
 		}
 
 		// Get the token and return it
-		return (String) ((JSONObject) getResponse()).get(KEY_TOKEN);
+		return (String) ((JSONObject) getResponse()).get(KEY_USER_TOKEN);
 	}
 
 	/**
@@ -59,7 +55,7 @@ public class LoginService extends Service {
 	 */
 	public String login(String email, String pwd) throws IOException, ParseException {
 		// Create the final url with the method, email, and password
-		String url = String.format(URL_METHOD_TEMPLATE, METHOD_NAME) + String.format(METHOD_ARGUMENTS, email, pwd);
+		String url = String.format(URL_LOGIN, email, pwd);
 		// Submit the email and password
 		submit(url);
 
