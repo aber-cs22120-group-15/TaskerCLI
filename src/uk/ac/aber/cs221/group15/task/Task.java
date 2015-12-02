@@ -13,7 +13,7 @@ import java.util.Set;
  * steps.
  *
  * @author Darren White
- * @version 0.1.2
+ * @version 0.1.3
  */
 public class Task {
 
@@ -105,7 +105,7 @@ public class Task {
 	 * @param step The step to add
 	 */
 	public void addStep(Step step) {
-		stepsProperty().getValue().add(step);
+		stepsProperty().get().add(step);
 	}
 
 	/**
@@ -150,7 +150,7 @@ public class Task {
 	 * @return The member name
 	 */
 	public String getCreator() {
-		return creatorProperty().getValue();
+		return creatorProperty().get();
 	}
 
 	/**
@@ -159,7 +159,7 @@ public class Task {
 	 * @return The date this task was completed
 	 */
 	public Date getDateCompleted() {
-		return dateCompletedProperty().getValue();
+		return dateCompletedProperty().get();
 	}
 
 	/**
@@ -168,7 +168,7 @@ public class Task {
 	 * @return The date this task was created
 	 */
 	public Date getDateCreated() {
-		return dateCreatedProperty().getValue();
+		return dateCreatedProperty().get();
 	}
 
 	/**
@@ -177,7 +177,7 @@ public class Task {
 	 * @return The expected completion date
 	 */
 	public Date getDateDue() {
-		return dateDueProperty().getValue();
+		return dateDueProperty().get();
 	}
 
 	/**
@@ -186,7 +186,7 @@ public class Task {
 	 * @return This tasks id
 	 */
 	public int getId() {
-		return idProperty().getValue();
+		return idProperty().get();
 	}
 
 	/**
@@ -198,7 +198,7 @@ public class Task {
 	 * @link Task.COMPLETED
 	 */
 	public int getStatus() {
-		return statusProperty().getValue();
+		return statusProperty().get();
 	}
 
 	/**
@@ -226,7 +226,7 @@ public class Task {
 	 * @return The steps for this task
 	 */
 	public Set<Step> getSteps() {
-		return stepsProperty().getValue();
+		return stepsProperty().get();
 	}
 
 	/**
@@ -235,7 +235,7 @@ public class Task {
 	 * @return The title of the task
 	 */
 	public String getTitle() {
-		return titleProperty().getValue();
+		return titleProperty().get();
 	}
 
 	/**
@@ -253,7 +253,7 @@ public class Task {
 	 * @param dateCompleted The date this task was completed
 	 */
 	public void setDateCompleted(Date dateCompleted) {
-		this.dateCompleted.setValue(dateCompleted);
+		this.dateCompleted.set(dateCompleted);
 	}
 
 	/**
@@ -268,7 +268,7 @@ public class Task {
 			throw new IllegalArgumentException("Not allowed to set status as ABANDONED!");
 		}
 
-		this.status.setValue(status);
+		this.status.set(status);
 	}
 
 	/**

@@ -9,7 +9,7 @@ import javafx.beans.property.*;
  * have one task
  *
  * @author Darren White
- * @version 0.1.0
+ * @version 0.1.1
  */
 public class Step {
 
@@ -66,7 +66,7 @@ public class Step {
 	 * @return The comment for the step
 	 */
 	public String getComment() {
-		return commentProperty().getValue();
+		return commentProperty().get();
 	}
 
 	/**
@@ -75,7 +75,7 @@ public class Step {
 	 * @return The step id
 	 */
 	public int getId() {
-		return idProperty().getValue();
+		return idProperty().get();
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class Step {
 	 * @return The desription of this task step
 	 */
 	public String getTitle() {
-		return titleProperty().getValue();
+		return titleProperty().get();
 	}
 
 	/**
@@ -110,7 +110,7 @@ public class Step {
 	 * @param comment The String to set the comment as
 	 */
 	public void setComment(String comment) {
-		this.comment.setValue(comment);
+		commentProperty().set(comment);
 	}
 
 	/**

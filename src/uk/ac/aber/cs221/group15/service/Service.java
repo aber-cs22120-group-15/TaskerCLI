@@ -6,13 +6,15 @@ import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLConnection;
 
 /**
  * This class sends requests to the database server
  *
  * @author Darren White
- * @version 0.1.0
+ * @version 0.1.1
  */
 public abstract class Service {
 
@@ -148,13 +150,43 @@ public abstract class Service {
 	 * @link getStatus()
 	 */
 	protected int submit(String url) throws IOException, ParseException {
+		return submit(url, null);
+	}
+
+	/**
+	 * Submits the arguments and returns a status integer. Status value
+	 * can be one of STATUS_SUCCESS and STATUS_ERROR.
+	 *
+	 * @param url  The url to request data from
+	 * @param post The data to send as POST
+	 * @return The status value
+	 * @throws IOException    If an I/O exception occurs
+	 * @throws ParseException If a Parse exception occurs
+	 * @link getStatus()
+	 */
+	protected int submit(String url, String post) throws IOException, ParseException {
 		// Create a new parser for json
 		JSONParser parser = new JSONParser();
-		// Open the stream and prepare a reader
-		InputStreamReader in = new InputStreamReader(new URL(url).openStream());
+		// Connect to the url
+		URLConnection conn = new URL(url).openConnection();
 
-		// Read the stream
-		result = (JSONObject) parser.parse(in);
+		if (post != null) {
+			// We want to send data to the connection
+			conn.setDoOutput(true);
+			// Open the output stream to send data
+			try (OutputStream out = conn.getOutputStream()) {
+				// Send the 'post' string
+				out.write(post.getBytes());
+				// Flush the outputstream to force the data to be written
+				out.flush();
+			}
+		}
+
+		// Open the stream and prepare a reader
+		try (InputStreamReader in = new InputStreamReader(conn.getInputStream())) {
+			// Read the stream
+			result = (JSONObject) parser.parse(in);
+		}
 
 		// Return the status
 		return getStatus();

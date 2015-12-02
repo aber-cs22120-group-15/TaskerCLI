@@ -17,7 +17,7 @@ import java.util.Date;
  * to get all tasks for a user using the unique token
  *
  * @author Darren White
- * @version 0.1.2
+ * @version 0.1.3
  */
 public class TaskService extends Service {
 
@@ -46,7 +46,12 @@ public class TaskService extends Service {
 	 * step id and the new comment
 	 */
 	private static final String URL_SET_COMMENT = URL_API +
-			"?method=set_task_step_comment&token=%s&id=%d&comment=%s";
+			"?method=set_task_step_comment&token=%s&id=%d";
+
+	/**
+	 * The arguments to post to the url
+	 */
+	private static final String URL_SET_COMMENT_POST = "comment=%s";
 
 	/**
 	 * The key attribute to get the task list value
@@ -96,6 +101,11 @@ public class TaskService extends Service {
 	 * The key attribute to get the task status
 	 */
 	private static final String KEY_TASK_STATUS = "status";
+
+	/**
+	 * The key attribute to get the step id
+	 */
+	private static final String KEY_STEP_ID = "id";
 
 	/**
 	 * The key attribute to get the step title
@@ -239,7 +249,7 @@ public class TaskService extends Service {
 	 */
 	private Step parseStep(JSONObject obj) {
 		// Get step id (cannot cast to int as json works with strings)
-		int id = Integer.parseInt((String) obj.get(KEY_TASK_ID));
+		int id = Integer.parseInt((String) obj.get(KEY_STEP_ID));
 		// Get the title of the step
 		String title = (String) obj.get(KEY_STEP_TITLE);
 		// Get the comment of the step
@@ -328,11 +338,10 @@ public class TaskService extends Service {
 	 * @param comment The comment to set for the task step
 	 */
 	public void updateTaskStepComment(String token, int id, String comment) throws IOException, ParseException {
-		// Create the url to submit with the method, token, id and comment
-		String url = String.format(URL_SET_COMMENT, token, id, comment);
-		// Submit the request along with the token
-		// and check if an error was returned
-		if (submit(url) == STATUS_ERROR) {
+		// Create the url to submit with the token
+		String url = String.format(URL_SET_COMMENT, token, id);
+		// Submit the request along with the id and comment (for POST data)
+		if (submit(url, String.format(URL_SET_COMMENT_POST, comment)) == STATUS_ERROR) {
 			// This should never happen as the token and tasks
 			// are retrieved from the database
 			throw new IllegalStateException(getErrorMessage());
