@@ -15,6 +15,10 @@
     -fx-text-fill: rgb(255, 0, 0);
 }
 
+#lbl-step-desc {
+    -fx-font-weight: normal;
+}
+
 #lbl-task-title {
     -fx-font-size: 18;
     -fx-font-weight: bold;

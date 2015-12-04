@@ -2,7 +2,8 @@ package uk.ac.aber.cs221.group15.task;
 
 import javafx.beans.property.*;
 
-import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -13,7 +14,7 @@ import java.util.Set;
  * steps.
  *
  * @author Darren White
- * @version 0.1.3
+ * @version 0.2.0
  */
 public class Task {
 
@@ -36,6 +37,12 @@ public class Task {
 	public static final int COMPLETED = 2;
 
 	/**
+	 * The date format used for date/time values
+	 */
+	public static final SimpleDateFormat DATE_FORMAT =
+			new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
+	/**
 	 * The unique task id
 	 */
 	private final ReadOnlyIntegerProperty id;
@@ -53,17 +60,17 @@ public class Task {
 	/**
 	 * Date task was created
 	 */
-	private final ReadOnlyObjectProperty<Date> dateCreated;
+	private final ReadOnlyObjectProperty<Calendar> dateCreated;
 
 	/**
 	 * Expected completed date for the task
 	 */
-	private final ReadOnlyObjectProperty<Date> dateDue;
+	private final ReadOnlyObjectProperty<Calendar> dateDue;
 
 	/**
 	 * Completion date for the task
 	 */
-	private final ObjectProperty<Date> dateCompleted;
+	private final ObjectProperty<Calendar> dateCompleted;
 
 	/**
 	 * The current status of the task
@@ -86,8 +93,8 @@ public class Task {
 	 * @param dateCompleted The date the task was completed
 	 * @param status        The current status of the task
 	 */
-	public Task(int id, String title, String creator, Date dateCreated,
-	            Date dateDue, Date dateCompleted, int status) {
+	public Task(int id, String title, String creator, Calendar dateCreated,
+	            Calendar dateDue, Calendar dateCompleted, int status) {
 		this.id = new ReadOnlyIntegerWrapper(id);
 		this.title = new ReadOnlyStringWrapper(title);
 		this.creator = new ReadOnlyStringWrapper(creator);
@@ -122,7 +129,7 @@ public class Task {
 	 *
 	 * @return The date completed property
 	 */
-	public ObjectProperty<Date> dateCompletedProperty() {
+	public ObjectProperty<Calendar> dateCompletedProperty() {
 		return dateCompleted;
 	}
 
@@ -131,7 +138,7 @@ public class Task {
 	 *
 	 * @return The date created property
 	 */
-	public ReadOnlyObjectProperty<Date> dateCreatedProperty() {
+	public ReadOnlyObjectProperty<Calendar> dateCreatedProperty() {
 		return dateCreated;
 	}
 
@@ -140,7 +147,7 @@ public class Task {
 	 *
 	 * @return The date due property
 	 */
-	public ReadOnlyObjectProperty<Date> dateDueProperty() {
+	public ReadOnlyObjectProperty<Calendar> dateDueProperty() {
 		return dateDue;
 	}
 
@@ -158,7 +165,7 @@ public class Task {
 	 *
 	 * @return The date this task was completed
 	 */
-	public Date getDateCompleted() {
+	public Calendar getDateCompleted() {
 		return dateCompletedProperty().get();
 	}
 
@@ -167,7 +174,7 @@ public class Task {
 	 *
 	 * @return The date this task was created
 	 */
-	public Date getDateCreated() {
+	public Calendar getDateCreated() {
 		return dateCreatedProperty().get();
 	}
 
@@ -176,7 +183,7 @@ public class Task {
 	 *
 	 * @return The expected completion date
 	 */
-	public Date getDateDue() {
+	public Calendar getDateDue() {
 		return dateDueProperty().get();
 	}
 
@@ -252,7 +259,7 @@ public class Task {
 	 *
 	 * @param dateCompleted The date this task was completed
 	 */
-	public void setDateCompleted(Date dateCompleted) {
+	public void setDateCompleted(Calendar dateCompleted) {
 		this.dateCompleted.set(dateCompleted);
 	}
 

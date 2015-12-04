@@ -9,15 +9,14 @@ import uk.ac.aber.cs221.group15.task.Step;
 import uk.ac.aber.cs221.group15.task.Task;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Calendar;
 
 /**
  * This service provides functionality to submit a request
  * to get all tasks for a user using the unique token
  *
  * @author Darren White
- * @version 0.1.3
+ * @version 0.1.4
  */
 public class TaskService extends Service {
 
@@ -39,7 +38,7 @@ public class TaskService extends Service {
 	 * the task id and the new status
 	 */
 	private static final String URL_SET_STATUS = URL_API +
-			"?method=change_status&token=%s&id=%d&status=%d";
+			"?method=change_status&token=%s&id=%d&status=%d&completed_time=%d";
 
 	/**
 	 * The url to set a task step comment using the user token,
@@ -118,12 +117,6 @@ public class TaskService extends Service {
 	private static final String KEY_STEP_COMMENT = "comment";
 
 	/**
-	 * The date format used to parse date/time values
-	 */
-	private static final SimpleDateFormat format =
-			new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-
-	/**
 	 * Adds the steps to each task in the specified list using the
 	 * user login token
 	 *
@@ -138,7 +131,8 @@ public class TaskService extends Service {
 		tasks.forEach(t -> ids.append(t.getId()).append(','));
 
 		// Create the url to submit with the method, token and task ids
-		String url = String.format(URL_LIST_STEPS, token, ids.toString());
+		// Encode the list of ids for the url
+		String url = String.format(URL_LIST_STEPS, token, encode(ids.toString()));
 		// Submit the request along with the token
 		int status = submit(url);
 
@@ -227,18 +221,21 @@ public class TaskService extends Service {
 	 * Try and parse the dates from the String
 	 *
 	 * @param s The date in string format
-	 * @return The Date parsed from the string
+	 * @return The date parsed from the string
 	 * @link format
 	 */
-	private Date parseDate(String s) {
+	private Calendar parseDate(String s) {
+		// Create a new Calendar to store the date in
+		Calendar c = Calendar.getInstance();
+
 		try {
 			// Try and parse the date from the string
-			return format.parse(s);
+			c.setTime(Task.DATE_FORMAT.parse(s));
 		} catch (java.text.ParseException e) {
 			e.printStackTrace();
-			// Otherwise return a default date
-			return new Date(0);
 		}
+
+		return c;
 	}
 
 	/**
@@ -273,9 +270,9 @@ public class TaskService extends Service {
 		// Get the member name who created the task
 		String creator = (String) obj.get(KEY_TASK_CREATOR);
 		// Parse dates
-		Date dateCreated = parseDate((String) obj.get(KEY_TASK_DATE_CREATED));
-		Date dateDue = parseDate((String) obj.get(KEY_TASK_DATE_DUE));
-		Date dateCompleted = null;
+		Calendar dateCreated = parseDate((String) obj.get(KEY_TASK_DATE_CREATED));
+		Calendar dateDue = parseDate((String) obj.get(KEY_TASK_DATE_DUE));
+		Calendar dateCompleted = null;
 		// Get the task status
 		int status = Integer.parseInt((String) obj.get(KEY_TASK_STATUS));
 
@@ -296,19 +293,20 @@ public class TaskService extends Service {
 	 * @param task  The task to update
 	 */
 	public void updateTaskStatus(String token, Task task) throws IOException, ParseException {
-		updateTaskStatus(token, task.getId(), task.getStatus());
+		updateTaskStatus(token, task.getId(), task.getStatus(), task.getDateCompleted().get(Calendar.SECOND));
 	}
 
 	/**
 	 * Updates a task status using the user token and the task id
 	 *
-	 * @param token  The token for the current user
-	 * @param id     The unique id for the task
-	 * @param status The status to set for the task
+	 * @param token   The token for the current user
+	 * @param id      The unique id for the task
+	 * @param status  The status to set for the task
+	 * @param seconds The timestamp in seconds when the task was completed
 	 */
-	public void updateTaskStatus(String token, int id, int status) throws IOException, ParseException {
-		// Create the url to submit with the method, token, id and status
-		String url = String.format(URL_SET_STATUS, token, id, status);
+	public void updateTaskStatus(String token, int id, int status, int seconds) throws IOException, ParseException {
+		// Create the url to submit with the method, token, id, status and seconds
+		String url = String.format(URL_SET_STATUS, token, id, status, seconds);
 		// Submit the request along with the token
 		// and check if an error was returned
 		if (submit(url) == STATUS_ERROR) {
@@ -341,7 +339,8 @@ public class TaskService extends Service {
 		// Create the url to submit with the token
 		String url = String.format(URL_SET_COMMENT, token, id);
 		// Submit the request along with the id and comment (for POST data)
-		if (submit(url, String.format(URL_SET_COMMENT_POST, comment)) == STATUS_ERROR) {
+		// Encode the comment for the url
+		if (submit(url, String.format(URL_SET_COMMENT_POST, encode(comment))) == STATUS_ERROR) {
 			// This should never happen as the token and tasks
 			// are retrieved from the database
 			throw new IllegalStateException(getErrorMessage());

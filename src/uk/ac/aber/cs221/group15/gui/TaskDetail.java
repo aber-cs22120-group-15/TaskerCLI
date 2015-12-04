@@ -3,11 +3,11 @@ package uk.ac.aber.cs221.group15.gui;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -22,8 +22,7 @@ import uk.ac.aber.cs221.group15.task.Step;
 import uk.ac.aber.cs221.group15.task.Task;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.Calendar;
 import java.util.Set;
 
 /**
@@ -33,7 +32,7 @@ import java.util.Set;
  * set tasks as completed (or uncompleted)
  *
  * @author Darren White
- * @version 0.1.1
+ * @version 0.1.2
  */
 public class TaskDetail extends Stage {
 
@@ -55,7 +54,7 @@ public class TaskDetail extends Stage {
 	/**
 	 * The initial date completed of the task
 	 */
-	private final Date initialCompletedDate;
+	private final Calendar initialCompletedDate;
 
 	/**
 	 * Used to check if any comments have been edited
@@ -130,7 +129,7 @@ public class TaskDetail extends Stage {
 		grid.add(lblTitle, 0, currentRow++, 3, 1);
 
 		// Create and add the due date label
-		Label lblDateDue = new Label("Due by " + task.getDateDue().toString());
+		Label lblDateDue = new Label("Due by " + Task.DATE_FORMAT.format(task.getDateDue().getTime()));
 		lblDateDue.setId("lbl-task-due");
 		grid.add(lblDateDue, 0, currentRow++);
 
@@ -147,6 +146,10 @@ public class TaskDetail extends Stage {
 		lblStatus.setId("lbl-task-status");
 		grid.add(lblStatus, 0, currentRow++);
 
+		Label lblSteps = new Label("Steps");
+		lblSteps.setId("lbl-task-steps");
+		grid.add(lblSteps, 0, currentRow++);
+
 		// Store the steps in this set
 		Set<Step> steps = task.getSteps();
 
@@ -155,19 +158,24 @@ public class TaskDetail extends Stage {
 			// Add the description label
 			Label lblStepDesc = new Label(s.getTitle());
 			lblStepDesc.setId("lbl-step-desc");
+			lblStepDesc.setMaxWidth(300);
+			lblStepDesc.setWrapText(true);
 			grid.add(lblStepDesc, 0, currentRow);
 
 			// Add the text field comment so users
 			// can edit comments
-			TextField txtStepComment = new TextField(s.getComment());
+			TextArea txtStepComment = new TextArea(s.getComment());
 			txtStepComment.setId("txt-step-comment");
+			txtStepComment.setPrefColumnCount(20);
+			txtStepComment.setPrefRowCount(2);
+			txtStepComment.setWrapText(true);
 			txtStepComment.setOnKeyReleased(e -> {
 				// Task step comment changed
 				edited = true;
 				s.setComment(txtStepComment.getText());
 			});
 			// Increment the row at the end
-			grid.add(txtStepComment, 1, currentRow++, 2, 1);
+			grid.add(txtStepComment, 1, currentRow++);
 		}
 
 		// Add the error label here
@@ -180,8 +188,6 @@ public class TaskDetail extends Stage {
 						task.getStatus() == Task.COMPLETED ? "Not Completed" : "Completed",
 				task.statusProperty()));
 		btnComplete.setId("btn-completed");
-		btnComplete.setMaxWidth(Double.MAX_VALUE);
-		btnComplete.setAlignment(Pos.CENTER_RIGHT);
 		// Set the task as completed on press
 		btnComplete.setOnAction(e -> {
 			// If the task is completed set it as allocated
@@ -192,20 +198,21 @@ public class TaskDetail extends Stage {
 				task.setStatus(Task.ALLOCATED);
 				// Change the date completed as nothing
 				task.setDateCompleted(null);
-			} else if (!setTaskCompleted(steps)) {
-				// Show error text
-				lblErr.setText("Must provide comments for each step!");
+			} else if (task.getStatus() == Task.ALLOCATED) {
+				// Set the status as completed as all steps have comments
+				task.setStatus(Task.COMPLETED);
+				// Set the date completed as now
+				task.setDateCompleted(Calendar.getInstance());
 			}
 
 			// Task status changed
 			edited = true;
 		});
-		grid.add(btnComplete, 1, currentRow);
+		grid.add(btnComplete, 0, currentRow);
 
 		// Add the button to save & close the details (if comments have been edited)
 		Button btnSave = new Button("Save");
 		btnSave.setId("btn-save");
-		btnSave.setAlignment(Pos.CENTER_RIGHT);
 		// Save the task on press and close the window
 		btnSave.setOnAction(e -> {
 			try {
@@ -218,27 +225,26 @@ public class TaskDetail extends Stage {
 				ex.printStackTrace();
 			}
 		});
-		grid.add(btnSave, 2, currentRow++);
+		grid.add(btnSave, 1, currentRow++);
 
-		// Col 0 - Labels
+		// Col 0 - Labels and Completed button
 		ColumnConstraints cc0 = new ColumnConstraints();
+		cc0.setHalignment(HPos.LEFT);
 		cc0.setHgrow(Priority.NEVER);
 
-		// Col 1 - TextFields and Completed button
+		// Col 1 - TextFields and Save button
 		ColumnConstraints cc1 = new ColumnConstraints();
-		cc1.setHgrow(Priority.ALWAYS);
-
-		// Col 2 - TextFields and Save button
-		ColumnConstraints cc2 = new ColumnConstraints();
-		cc2.setHgrow(Priority.NEVER);
+		cc1.setHalignment(HPos.RIGHT);
+		cc1.setHgrow(Priority.NEVER);
 
 		// Change the row sizes
-		grid.getColumnConstraints().addAll(cc0, cc1, cc2);
+		grid.getColumnConstraints().addAll(cc0, cc1);
 
 		// Make each row equidistant
 		for (int i = 0; i < currentRow; i++) {
 			RowConstraints rc = new RowConstraints();
-			rc.setPercentHeight(100 / currentRow);
+			rc.setValignment(VPos.TOP);
+			rc.setVgrow(Priority.NEVER);
 			grid.getRowConstraints().add(rc);
 		}
 
@@ -265,37 +271,5 @@ public class TaskDetail extends Stage {
 		for (Step s : steps) {
 			service.updateTaskStepComment(token, s);
 		}
-	}
-
-	/**
-	 * Sets the task as completed using setStatus(int)
-	 *
-	 * @return false if one or more steps do not have comments
-	 * otherwise true
-	 */
-	private boolean setTaskCompleted(Set<Step> steps) {
-		// Can only complete a task if the status is allocated
-		if (task.getStatus() != Task.ALLOCATED) {
-			return false;
-		}
-
-		// Check all steps have comments, if not
-		// return false
-		for (Step s : steps) {
-			String comment = s.getComment();
-
-			if (comment == null || comment.trim().isEmpty()) {
-				// We found a step without a comment
-				return false;
-			}
-		}
-
-		// Set the status as completed as all steps have comments
-		task.setStatus(Task.COMPLETED);
-		// Set the date completed as now
-		task.setDateCompleted(new GregorianCalendar().getTime());
-
-		// Return true as we successfully checked the steps and set the status
-		return true;
 	}
 }

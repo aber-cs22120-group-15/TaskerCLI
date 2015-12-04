@@ -16,7 +16,7 @@ import javafx.scene.text.TextAlignment;
 import uk.ac.aber.cs221.group15.service.TaskService;
 import uk.ac.aber.cs221.group15.task.Task;
 
-import java.util.Date;
+import java.util.Calendar;
 
 /**
  * Used to display all tasks for the user in a table
@@ -24,7 +24,7 @@ import java.util.Date;
  * set as completed (or complete each step)
  *
  * @author Darren White
- * @version 0.0.1
+ * @version 0.0.2
  */
 public class TaskView extends GridPane {
 
@@ -81,17 +81,23 @@ public class TaskView extends GridPane {
 		// Create six columns: task, created date, due date,
 		// completed date, member and status
 		TableColumn<Task, String> titleCol = new TableColumn<>("Task");
-		TableColumn<Task, Date> createdDateCol = new TableColumn<>("Date created");
-		TableColumn<Task, Date> dueDateCol = new TableColumn<>("Due date");
-		TableColumn<Task, Date> completedDateCol = new TableColumn<>("Date completed");
+		TableColumn<Task, Calendar> createdDateCol = new TableColumn<>("Date created");
+		TableColumn<Task, Calendar> dueDateCol = new TableColumn<>("Due date");
+		TableColumn<Task, Calendar> completedDateCol = new TableColumn<>("Date completed");
 		TableColumn<Task, String> creatorCol = new TableColumn<>("Assigned by");
 		TableColumn<Task, String> statusCol = new TableColumn<>("Status");
 
 		// Set each of the cell value factories (which fields they
 		// correspond to in the Task class)
 		titleCol.setCellValueFactory(t -> t.getValue().titleProperty());
+		// Display the cell as a CalendarCell
+		createdDateCol.setCellFactory(param -> new CalendarCell<>());
 		createdDateCol.setCellValueFactory(t -> t.getValue().dateCreatedProperty());
+		// Display the cell as a CalendarCell
+		dueDateCol.setCellFactory(param -> new CalendarCell<>());
 		dueDateCol.setCellValueFactory(t -> t.getValue().dateDueProperty());
+		// Display the cell as a CalendarCell
+		completedDateCol.setCellFactory(param -> new CalendarCell<>());
 		completedDateCol.setCellValueFactory(t -> t.getValue().dateCompletedProperty());
 		creatorCol.setCellValueFactory(t -> t.getValue().creatorProperty());
 		// Convert the status integer to readable string

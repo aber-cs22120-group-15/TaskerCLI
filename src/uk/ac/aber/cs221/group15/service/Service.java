@@ -7,14 +7,16 @@ import org.json.simple.parser.ParseException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 
 /**
  * This class sends requests to the database server
  *
  * @author Darren White
- * @version 0.1.1
+ * @version 0.1.2
  */
 public abstract class Service {
 
@@ -72,6 +74,17 @@ public abstract class Service {
 	 * The main JSONObject is stored here
 	 */
 	private JSONObject result;
+
+	/**
+	 * Encodes a string for a url segment in utf-8
+	 *
+	 * @param s The string to encode
+	 * @return The encoded string
+	 * @throws UnsupportedEncodingException If the named encoding is not supported
+	 */
+	protected String encode(String s) throws UnsupportedEncodingException {
+		return URLEncoder.encode(s, "UTF-8");
+	}
 
 	/**
 	 * Gets the error message if there is one. May return

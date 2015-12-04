@@ -14,8 +14,7 @@ import javafx.scene.paint.Paint;
 import uk.ac.aber.cs221.group15.task.Task;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -25,7 +24,7 @@ import java.util.concurrent.Callable;
  * upcoming tasks and a few major details
  *
  * @author Darren White
- * @version 0.0.7
+ * @version 0.0.9
  */
 public class DashboardView extends GridPane {
 
@@ -75,11 +74,8 @@ public class DashboardView extends GridPane {
 
 		// The outstanding tasks statistic
 		Callable<Integer> outstandingTasks = () -> {
-			// The current date
-			Date now = new GregorianCalendar().getTime();
-			// Filter tasks to dates in future and the task status is allocated
-			return tasks.filtered(t -> t.getDateDue().compareTo(now) > 0 &&
-					t.getStatus() == Task.ALLOCATED).size();
+			// Filter tasks with status allocated
+			return tasks.filtered(t -> t.getStatus() == Task.ALLOCATED).size();
 		};
 		// The color for the outstanding tasks stat
 		Callable<Paint> outstandingColor = () -> {
@@ -102,9 +98,9 @@ public class DashboardView extends GridPane {
 		// The statistic value for overdue tasks
 		Callable<Integer> overdueTasks = () -> {
 			// The current date
-			Date now = new GregorianCalendar().getTime();
-			// Filter tasks to dates in past
-			return tasks.filtered(t -> t.getDateDue().compareTo(now) < 0).size();
+			Calendar now = Calendar.getInstance();
+			// Filter tasks to dates in past with status allocated
+			return tasks.filtered(t -> t.getDateDue().compareTo(now) < 0 && t.getStatus() == Task.ALLOCATED).size();
 		};
 		// The color for the overdue tasks stat
 		Callable<Paint> overdueColor = () -> {
@@ -139,13 +135,15 @@ public class DashboardView extends GridPane {
 
 		// Create columns: task, due date, member, and status
 		TableColumn<Task, String> titleCol = new TableColumn<>("Task");
-		TableColumn<Task, Date> dueDateCol = new TableColumn<>("Due date");
+		TableColumn<Task, Calendar> dueDateCol = new TableColumn<>("Due date");
 		TableColumn<Task, String> creatorCol = new TableColumn<>("Assigned by");
 		TableColumn<Task, String> statusCol = new TableColumn<>("Status");
 
 		// Set each of the cell value factories (which fields they
 		// correspond to in the Task class)
 		titleCol.setCellValueFactory(t -> t.getValue().titleProperty());
+		// Display the cell as a CalendarCell
+		dueDateCol.setCellFactory(param -> new CalendarCell<>());
 		dueDateCol.setCellValueFactory(t -> t.getValue().dateDueProperty());
 		creatorCol.setCellValueFactory(t -> t.getValue().creatorProperty());
 		// Convert the status integer to readable string
