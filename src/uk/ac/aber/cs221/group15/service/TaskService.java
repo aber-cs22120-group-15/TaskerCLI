@@ -131,8 +131,7 @@ public class TaskService extends Service {
 		tasks.forEach(t -> ids.append(t.getId()).append(','));
 
 		// Create the url to submit with the method, token and task ids
-		// Encode the list of ids for the url
-		String url = String.format(URL_LIST_STEPS, token, encode(ids.toString()));
+		String url = String.format(URL_LIST_STEPS, token, ids.toString());
 		// Submit the request along with the token
 		int status = submit(url);
 
@@ -293,7 +292,13 @@ public class TaskService extends Service {
 	 * @param task  The task to update
 	 */
 	public void updateTaskStatus(String token, Task task) throws IOException, ParseException {
-		updateTaskStatus(token, task.getId(), task.getStatus(), task.getDateCompleted().get(Calendar.SECOND));
+		long seconds = 0;
+
+		if (task.getDateCompleted() != null) {
+			seconds = task.getDateCompleted().getTimeInMillis() / 1000;
+		}
+
+		updateTaskStatus(token, task.getId(), task.getStatus(), seconds);
 	}
 
 	/**
@@ -304,7 +309,7 @@ public class TaskService extends Service {
 	 * @param status  The status to set for the task
 	 * @param seconds The timestamp in seconds when the task was completed
 	 */
-	public void updateTaskStatus(String token, int id, int status, int seconds) throws IOException, ParseException {
+	public void updateTaskStatus(String token, int id, int status, long seconds) throws IOException, ParseException {
 		// Create the url to submit with the method, token, id, status and seconds
 		String url = String.format(URL_SET_STATUS, token, id, status, seconds);
 		// Submit the request along with the token
