@@ -1,7 +1,6 @@
 package uk.ac.aber.cs221.group15.gui;
 
 import javafx.beans.binding.Bindings;
-import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -13,6 +12,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.TextAlignment;
+import uk.ac.aber.cs221.group15.TaskerCLI;
 import uk.ac.aber.cs221.group15.service.TaskService;
 import uk.ac.aber.cs221.group15.task.Task;
 
@@ -24,7 +24,7 @@ import java.util.Calendar;
  * set as completed (or complete each step)
  *
  * @author Darren White
- * @version 0.0.2
+ * @version 0.0.3
  */
 public class TaskView extends GridPane {
 
@@ -34,19 +34,11 @@ public class TaskView extends GridPane {
 	private static final TaskService service = new TaskService();
 
 	/**
-	 * The list to store all the user tasks
-	 */
-	private final ObservableList<Task> tasks;
-
-	/**
 	 * Creates a new task view
 	 *
 	 * @param token The token for the current user
-	 * @param tasks The tasks for the user
 	 */
-	public TaskView(String token, ObservableList<Task> tasks) {
-		this.tasks = tasks;
-
+	public TaskView(String token) {
 		init(token);
 	}
 
@@ -58,7 +50,7 @@ public class TaskView extends GridPane {
 	 */
 	private TableView<Task> createTaskTable(String token) {
 		// Create the task table for the tasks
-		TableView<Task> table = new TableView<>(tasks);
+		TableView<Task> table = new TableView<>(TaskerCLI.getTaskSync().getTasks());
 
 		// Use this for listening to mouse events on each row
 		table.setRowFactory(tv -> {

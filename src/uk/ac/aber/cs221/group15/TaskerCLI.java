@@ -16,7 +16,7 @@ import java.nio.file.Paths;
  * will then show the main window
  *
  * @author Darren White
- * @version 0.0.4
+ * @version 0.0.5
  */
 public class TaskerCLI extends Application {
 
@@ -26,9 +26,9 @@ public class TaskerCLI extends Application {
 	public static final String APP_NAME = "TaskerCLI";
 
 	/**
-	 *
+	 * The current version for the application
 	 */
-	public static final String APP_VERSION = "0.0.4";
+	public static final String APP_VERSION = "0.1.0";
 
 	/**
 	 * The main window width
@@ -39,6 +39,11 @@ public class TaskerCLI extends Application {
 	 * The main window height
 	 */
 	private static final double APP_HEIGHT = 600;
+
+	/**
+	 * The instance of the SyncTask used for syncing
+	 */
+	private static TaskSync taskSync;
 
 	/**
 	 * Get the resource at the path
@@ -59,6 +64,15 @@ public class TaskerCLI extends Application {
 		}
 
 		return in;
+	}
+
+	/**
+	 * Gets the instance of the task syncer
+	 *
+	 * @return The instance of the SyncTask class
+	 */
+	public static TaskSync getTaskSync() {
+		return taskSync;
 	}
 
 	/**
@@ -116,6 +130,9 @@ public class TaskerCLI extends Application {
 	 * @param stage The primary stage
 	 */
 	public static void startOverview(Stage stage, String token) {
+		// Start the task sync schedule
+		taskSync = new TaskSync(token);
+
 		// Initialize and show main app
 		OverviewPane ovp = new OverviewPane(token);
 		// Create a new scene with the default width & height

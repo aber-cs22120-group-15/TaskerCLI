@@ -11,6 +11,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import uk.ac.aber.cs221.group15.TaskerCLI;
 import uk.ac.aber.cs221.group15.task.Task;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.util.concurrent.Callable;
  * upcoming tasks and a few major details
  *
  * @author Darren White
- * @version 0.0.9
+ * @version 0.0.10
  */
 public class DashboardView extends GridPane {
 
@@ -39,19 +40,11 @@ public class DashboardView extends GridPane {
 	private static final int MAX_TASKS = 10;
 
 	/**
-	 * The list to store all the user tasks
-	 */
-	private final ObservableList<Task> tasks;
-
-	/**
 	 * Creates a new Dashboard
 	 *
 	 * @param token The token for the current user
-	 * @param tasks The tasks for the user
 	 */
-	public DashboardView(String token, ObservableList<Task> tasks) {
-		this.tasks = tasks;
-
+	public DashboardView(String token) {
 		init(token);
 	}
 
@@ -65,7 +58,7 @@ public class DashboardView extends GridPane {
 		List<StatPane> panes = new ArrayList<>();
 
 		// The total tasks statistic
-		Callable<Integer> totalTasks = tasks::size;
+		Callable<Integer> totalTasks = TaskerCLI.getTaskSync().getTasks()::size;
 		// The color for the total tasks stat
 		Callable<Paint> totalColor = () -> Color.rgb(40, 140, 255);
 
@@ -75,7 +68,7 @@ public class DashboardView extends GridPane {
 		// The outstanding tasks statistic
 		Callable<Integer> outstandingTasks = () -> {
 			// Filter tasks with status allocated
-			return tasks.filtered(t -> t.getStatus() == Task.ALLOCATED).size();
+			return TaskerCLI.getTaskSync().getTasks().filtered(t -> t.getStatus() == Task.ALLOCATED).size();
 		};
 		// The color for the outstanding tasks stat
 		Callable<Paint> outstandingColor = () -> {
@@ -100,7 +93,7 @@ public class DashboardView extends GridPane {
 			// The current date
 			Calendar now = Calendar.getInstance();
 			// Filter tasks to dates in past with status allocated
-			return tasks.filtered(t -> t.getDateDue().compareTo(now) < 0 && t.getStatus() == Task.ALLOCATED).size();
+			return TaskerCLI.getTaskSync().getTasks().filtered(t -> t.getDateDue().compareTo(now) < 0 && t.getStatus() == Task.ALLOCATED).size();
 		};
 		// The color for the overdue tasks stat
 		Callable<Paint> overdueColor = () -> {
@@ -131,7 +124,10 @@ public class DashboardView extends GridPane {
 		// Create the task table for an overview of tasks
 		TableView<Task> table = new TableView<>();
 
-		table.itemsProperty().bind(Bindings.createObjectBinding(() -> tasks.filtered(t -> tasks.indexOf(t) < MAX_TASKS), tasks));
+		table.itemsProperty().bind(Bindings.createObjectBinding(() -> {
+			ObservableList<Task> tasks = TaskerCLI.getTaskSync().getTasks();
+			return tasks.filtered(t -> tasks.indexOf(t) < MAX_TASKS);
+		}, TaskerCLI.getTaskSync().getTasks()));
 
 		// Create columns: task, due date, member, and status
 		TableColumn<Task, String> titleCol = new TableColumn<>("Task");
@@ -267,9 +263,9 @@ public class DashboardView extends GridPane {
 			lblStat.getStyleClass().add("statistic");
 			// Bind the stat value as the callable value with the tasks
 			// list as a dependency
-			lblStat.textProperty().bind(Bindings.format("%d", Bindings.createIntegerBinding(statFunc, tasks)));
+			lblStat.textProperty().bind(Bindings.format("%d", Bindings.createIntegerBinding(statFunc, TaskerCLI.getTaskSync().getTasks())));
 			// Bind the stat color callable function with tasks as dependency
-			lblStat.textFillProperty().bind(Bindings.createObjectBinding(colorFunc, tasks));
+			lblStat.textFillProperty().bind(Bindings.createObjectBinding(colorFunc, TaskerCLI.getTaskSync().getTasks()));
 
 			// Make a placeholder for the stat
 			StackPane pane = new StackPane();

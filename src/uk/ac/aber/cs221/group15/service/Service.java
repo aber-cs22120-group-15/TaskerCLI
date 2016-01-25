@@ -16,7 +16,7 @@ import java.net.URLEncoder;
  * This class sends requests to the database server
  *
  * @author Darren White
- * @version 0.1.2
+ * @version 0.1.3
  */
 public abstract class Service {
 
@@ -33,7 +33,7 @@ public abstract class Service {
 	/**
 	 * The base url of the database
 	 */
-	protected static final String URL_BASE = "http://users.aber.ac.uk/dkm2/TaskerMAN/";
+	protected static final String URL_BASE = "http://taskerman.ngrok.io/";
 
 	/**
 	 * The base api url
@@ -74,6 +74,27 @@ public abstract class Service {
 	 * The main JSONObject is stored here
 	 */
 	private JSONObject result;
+
+	/**
+	 * Tests the availability of the server
+	 *
+	 * @return Checks if a connection to the server is reachable from the client
+	 */
+	public static boolean checkConnection() {
+		try {
+			// Connect to the server
+			URLConnection conn = new URL(URL_BASE).openConnection();
+
+			conn.connect();
+
+			// If we got here the server is reachable
+
+			return true;
+		} catch (IOException e) {
+			// Unable to connect to the server
+			return false;
+		}
+	}
 
 	/**
 	 * Encodes a string for a url segment in utf-8
@@ -178,6 +199,10 @@ public abstract class Service {
 	 * @link getStatus()
 	 */
 	protected int submit(String url, String post) throws IOException, ParseException {
+		if (!checkConnection()) {
+			return -1;
+		}
+
 		// Create a new parser for json
 		JSONParser parser = new JSONParser();
 		// Connect to the url

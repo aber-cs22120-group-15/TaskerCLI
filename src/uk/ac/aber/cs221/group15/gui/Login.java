@@ -13,6 +13,7 @@ import javafx.stage.Window;
 import org.json.simple.parser.ParseException;
 import uk.ac.aber.cs221.group15.TaskerCLI;
 import uk.ac.aber.cs221.group15.service.LoginService;
+import uk.ac.aber.cs221.group15.service.Service;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -33,7 +34,7 @@ import java.nio.file.StandardOpenOption;
  * to enable a faster login process
  *
  * @author Darren White
- * @version 0.0.5
+ * @version 0.0.6
  */
 public class Login extends Stage {
 
@@ -142,15 +143,9 @@ public class Login extends Stage {
 
 		// Set the hint text
 		pwd.setPromptText("Password");
-		// If the enter key is pressed; login
-		pwd.setOnKeyPressed(e -> {
-			// If the enter key was pressed
-			if (e.getCode() == KeyCode.ENTER) {
-				// Request login with the user details
-				login(txtEmail.getText(), pwd.getText(), cbRemember.isSelected());
-			}
-		});
 
+		// Use this as the default button
+		login.setDefaultButton(true);
 		// If the login button is pressed, login
 		login.setOnAction(event -> login(txtEmail.getText(), pwd.getText(),
 				cbRemember.isSelected()));
@@ -218,15 +213,39 @@ public class Login extends Stage {
 	 * @param remember If the user is to be remembered for next time
 	 */
 	private void login(String email, String pwd, boolean remember) {
-		try {
-			// TODO If we are offline, offer an offline mode if local storage exists
+		// The path to for the user credentials
+		Path cache = Paths.get(CACHE_PATH);
 
+		// Check if we are offline
+		if (!Service.checkConnection()) {
+			// If a user has logged in before, offer offline mode
+			// otherwise don't login
+			if (Files.exists(cache)) {
+				// Create and show the notification for offline mode
+				Notifications.create()
+						.message("Cannot reach server. Continue offline?")
+						.title("Unable to connect")
+						.yesNo(event -> {
+							// If the yes button was pressed use a temporary token
+							// and close this window
+							Button src = (Button) event.getSource();
+							if (src.getText().equals("Yes")) {
+								token = "offline-mode";
+								close();
+							}
+
+							// Also hide the notification
+							src.getScene().getWindow().hide();
+						}).show();
+			}
+
+			return;
+		}
+
+		try {
 			// Submit the email and password
 			// and store the token is successful (null if error)
 			token = service.login(email, pwd);
-
-			// The path to store the credentials
-			Path p = Paths.get(CACHE_PATH);
 
 			// We encountered an error
 			if (token == null) {
@@ -239,7 +258,7 @@ public class Login extends Stage {
 				// Save the credentials for next time if we need to
 				if (remember) {
 					// Create a writer for the path (overwrite existing)
-					try (BufferedWriter bw = Files.newBufferedWriter(p, StandardOpenOption.CREATE)) {
+					try (BufferedWriter bw = Files.newBufferedWriter(cache, StandardOpenOption.CREATE)) {
 						// Write the email to the file
 						bw.write(email);
 						// Flush before close
@@ -252,8 +271,8 @@ public class Login extends Stage {
 				} else {
 					// We don't want to save the credentials so delete the
 					// existing ones if there is any
-					if (Files.exists(p)) {
-						Files.delete(p);
+					if (Files.exists(cache)) {
+						Files.delete(cache);
 					}
 				}
 

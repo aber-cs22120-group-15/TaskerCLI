@@ -1,25 +1,18 @@
 package uk.ac.aber.cs221.group15.gui;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import org.json.simple.parser.ParseException;
 import uk.ac.aber.cs221.group15.TaskerCLI;
 import uk.ac.aber.cs221.group15.service.TaskService;
-import uk.ac.aber.cs221.group15.task.Task;
-
-import java.io.IOException;
-import java.util.LinkedList;
 
 /**
  * This class allows navigation between different views
  * where the current view will be at index 0 of the StackPane
  *
  * @author Darren White
- * @version 0.0.7
+ * @version 0.0.8
  */
 public class NavigationPane extends GridPane {
 
@@ -51,26 +44,9 @@ public class NavigationPane extends GridPane {
 	 * @param token The token for the current user
 	 */
 	private void init(StackPane stack, String token) {
-		// The set of tasks in the overview
-		ObservableList<Task> tasks = FXCollections.observableList(new LinkedList<>());
-
-		// TODO If changes are found locally then if we are online submit them
-		// TODO If we are offline load local tasks otherwise load from online
-
-		// Load tasks from the database in the background
-		new Thread(() -> {
-			try {
-				// Try and load the tasks from the database
-				service.getTasks(tasks, token);
-			} catch (IOException | ParseException e) {
-				System.err.println("Unable to load tasks from database");
-				e.printStackTrace();
-			}
-		}).start();
-
 		// Initialize the different views
-		DashboardView dv = new DashboardView(token, tasks);
-		TaskView tv = new TaskView(token, tasks);
+		DashboardView dv = new DashboardView(token);
+		TaskView tv = new TaskView(token);
 
 		// Set id for css
 		setId("nav-pane");

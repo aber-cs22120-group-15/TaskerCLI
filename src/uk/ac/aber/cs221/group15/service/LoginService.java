@@ -10,7 +10,7 @@ import java.io.IOException;
  * request to the database and retrieve the token
  *
  * @author Darren White
- * @version 0.0.4
+ * @version 0.0.5
  */
 public class LoginService extends Service {
 
@@ -57,10 +57,14 @@ public class LoginService extends Service {
 		// Create the final url with the method, email, and password
 		// Encode the email and password for the url
 		String url = String.format(URL_LOGIN, encode(email), encode(pwd));
-		// Submit the email and password
-		submit(url);
 
-		// Get the token and return it
-		return getToken();
+		// Submit the email and password
+		if (submit(url) == STATUS_SUCCESS) {
+			// Get the token and return it
+			return getToken();
+		} else {
+			// Error submitting credentials
+			return null;
+		}
 	}
 }
