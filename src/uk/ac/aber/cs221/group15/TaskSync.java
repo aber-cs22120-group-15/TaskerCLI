@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author Darren White
+ * @version 0.0.2
  */
 public class TaskSync extends TimerTask implements Callable<ObservableList<Task>> {
 

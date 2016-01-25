@@ -1,6 +1,7 @@
 package uk.ac.aber.cs221.group15.gui;
 
 import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 /**
  * This class is used to represent the Dashboard in the Overview
@@ -25,7 +27,7 @@ import java.util.concurrent.Callable;
  * upcoming tasks and a few major details
  *
  * @author Darren White
- * @version 0.0.10
+ * @version 0.0.11
  */
 public class DashboardView extends GridPane {
 
@@ -124,9 +126,16 @@ public class DashboardView extends GridPane {
 		// Create the task table for an overview of tasks
 		TableView<Task> table = new TableView<>();
 
+		// Set the items property to display the upcoming tasks
 		table.itemsProperty().bind(Bindings.createObjectBinding(() -> {
 			ObservableList<Task> tasks = TaskerCLI.getTaskSync().getTasks();
-			return tasks.filtered(t -> tasks.indexOf(t) < MAX_TASKS);
+			// Filter the tasks which are allocated and to the maximum number
+			// of tasks to display
+			return FXCollections.observableList(
+					tasks.stream()
+					.filter(t -> t.getStatus() == Task.ALLOCATED)
+					.limit(MAX_TASKS)
+					.collect(Collectors.toList()));
 		}, TaskerCLI.getTaskSync().getTasks()));
 
 		// Create columns: task, due date, member, and status
