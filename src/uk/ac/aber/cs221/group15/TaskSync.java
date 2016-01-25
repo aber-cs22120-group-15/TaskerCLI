@@ -8,7 +8,10 @@ import uk.ac.aber.cs221.group15.service.Service;
 import uk.ac.aber.cs221.group15.service.TaskService;
 import uk.ac.aber.cs221.group15.task.Task;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
@@ -18,9 +21,12 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author Darren White
- * @version 0.0.2
+ * @version 0.0.3
  */
 public class TaskSync extends TimerTask implements Callable<ObservableList<Task>> {
+
+	private static final String PATH_TASKS = System.getProperty("user.home") +
+			File.separator + ".tasker_tasks";
 
 	/**
 	 * The service used to submit requests to get task steps
@@ -63,9 +69,23 @@ public class TaskSync extends TimerTask implements Callable<ObservableList<Task>
 
 	@Override
 	public ObservableList<Task> call() throws Exception {
+		Path p = Paths.get(PATH_TASKS);
+
 		if (!Service.checkConnection()) {
+			if (!Files.exists(p)) {
+				return tasks;
+			}
+
+			try (ObjectInputStream in = new ObjectInputStream(Files.newInputStream(p))) {
+				int len = in.readInt();
+				while (len-- > 0) {
+					tasks.add(Task.readTask(in));
+				}
+			}
+
 			return tasks;
 		}
+
 
 		// TODO Check for edited tasks and submit them
 
@@ -78,6 +98,17 @@ public class TaskSync extends TimerTask implements Callable<ObservableList<Task>
 		} catch (IOException | ParseException e) {
 			System.err.println("Unable to load tasks from database");
 			e.printStackTrace();
+		}
+
+		try (ObjectOutputStream out = new ObjectOutputStream(Files.newOutputStream(p))) {
+			out.writeInt(newTasks.size());
+			newTasks.forEach(t -> {
+				try {
+					t.writeTask(out);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			});
 		}
 
 		Platform.runLater(() -> {

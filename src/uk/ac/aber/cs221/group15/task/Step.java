@@ -2,7 +2,9 @@ package uk.ac.aber.cs221.group15.task;
 
 import javafx.beans.property.*;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 /**
  * Represents a single step for a task. A step can
@@ -11,9 +13,9 @@ import java.io.Serializable;
  * have one task
  *
  * @author Darren White
- * @version 0.1.2
+ * @version 0.1.3
  */
-public class Step implements Serializable {
+public class Step {
 
 	/**
 	 * The unique id for this task step
@@ -106,6 +108,10 @@ public class Step implements Serializable {
 		return id;
 	}
 
+	public static Step readStep(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		return new Step(in.readInt(), in.readUTF(), in.readUTF());
+	}
+
 	/**
 	 * Allows the user to change this task step
 	 *
@@ -129,7 +135,19 @@ public class Step implements Serializable {
 	 */
 	@Override
 	public String toString() {
-		return "Step{id=" + getId() + ", title='" + getTitle() +
-				"\', comment='" + getComment() + "\'}";
+		return "Step{" +
+				"id=" + id +
+				", title=" + title +
+				", comment=" + comment + '}';
+	}
+
+	public void writeStep(ObjectOutputStream out) throws IOException {
+		writeStep(this, out);
+	}
+
+	public static void writeStep(Step step, ObjectOutputStream out) throws IOException {
+		out.writeInt(step.getId());
+		out.writeUTF(step.getTitle());
+		out.writeUTF(step.getComment());
 	}
 }

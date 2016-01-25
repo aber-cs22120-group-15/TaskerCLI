@@ -2,7 +2,9 @@ package uk.ac.aber.cs221.group15.task;
 
 import javafx.beans.property.*;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedHashSet;
@@ -15,9 +17,9 @@ import java.util.Set;
  * steps.
  *
  * @author Darren White
- * @version 0.2.1
+ * @version 0.2.2
  */
-public class Task implements Serializable {
+public class Task {
 
 	/**
 	 * Status for a task that has been abandoned.
@@ -255,6 +257,26 @@ public class Task implements Serializable {
 		return id;
 	}
 
+	public static Task readTask(ObjectInputStream in) throws IOException, ClassNotFoundException {
+
+		int id = in.readInt();
+		String title = in.readUTF();
+		String creator = in.readUTF();
+		Calendar dateCreated = (Calendar) in.readObject();
+		Calendar dateDue = (Calendar) in.readObject();
+		Calendar dateCompleted = (Calendar) in.readObject();
+		int status = in.readInt();
+
+		Task t = new Task(id, title, creator, dateCreated, dateDue, dateCompleted, status);
+
+		int len = in.readInt();
+		while (len-- > 0) {
+			t.addStep(Step.readStep(in));
+		}
+
+		return t;
+	}
+
 	/**
 	 * Set the date completed for this task
 	 *
@@ -300,5 +322,44 @@ public class Task implements Serializable {
 	 */
 	public ReadOnlyStringProperty titleProperty() {
 		return title;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return "Task{" +
+				"id=" + id +
+				", title=" + title +
+				", creator=" + creator +
+				", dateCreated=" + dateCreated +
+				", dateDue=" + dateDue +
+				", dateCompleted=" + dateCompleted +
+				", status=" + status +
+				", steps=" + steps +
+				'}';
+	}
+
+	public void writeTask(ObjectOutputStream out) throws IOException {
+		writeTask(this, out);
+	}
+
+	public static void writeTask(Task t, ObjectOutputStream out) throws IOException {
+		out.writeInt(t.getId());
+		out.writeUTF(t.getTitle());
+		out.writeUTF(t.getCreator());
+		out.writeObject(t.getDateCreated());
+		out.writeObject(t.getDateDue());
+		out.writeObject(t.getDateCompleted());
+		out.writeInt(t.getStatus());
+		out.writeInt(t.getSteps().size());
+		t.getSteps().forEach(step -> {
+			try {
+				step.writeStep(out);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
 	}
 }

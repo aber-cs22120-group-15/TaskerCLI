@@ -34,7 +34,7 @@ import java.nio.file.StandardOpenOption;
  * to enable a faster login process
  *
  * @author Darren White
- * @version 0.0.6
+ * @version 0.0.7
  */
 public class Login extends Stage {
 
@@ -56,8 +56,8 @@ public class Login extends Stage {
 	/**
 	 * The path to store user credentials
 	 */
-	private static final String CACHE_PATH = System.getProperty("user.home") +
-			File.separator + ".taskercli";
+	private static final String PATH_LOGIN = System.getProperty("user.home") +
+			File.separator + ".tasker_login";
 
 	/**
 	 * The service used to submit login requests
@@ -174,7 +174,7 @@ public class Login extends Stage {
 		lblTitle.requestFocus();
 
 		// The path to store the credentials
-		Path p = Paths.get(CACHE_PATH);
+		Path p = Paths.get(PATH_LOGIN);
 
 		// If the path exists then load then credentials
 		if (Files.exists(p)) {
@@ -214,7 +214,7 @@ public class Login extends Stage {
 	 */
 	private void login(String email, String pwd, boolean remember) {
 		// The path to for the user credentials
-		Path cache = Paths.get(CACHE_PATH);
+		Path cache = Paths.get(PATH_LOGIN);
 
 		// Check if we are offline
 		if (!Service.checkConnection()) {
