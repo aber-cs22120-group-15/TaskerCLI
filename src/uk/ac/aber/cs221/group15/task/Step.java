@@ -2,6 +2,8 @@ package uk.ac.aber.cs221.group15.task;
 
 import javafx.beans.property.*;
 
+import java.io.Serializable;
+
 /**
  * Represents a single step for a task. A step can
  * be set as completed and contains a comment.
@@ -9,9 +11,9 @@ import javafx.beans.property.*;
  * have one task
  *
  * @author Darren White
- * @version 0.1.1
+ * @version 0.1.2
  */
-public class Step {
+public class Step implements Serializable {
 
 	/**
 	 * The unique id for this task step

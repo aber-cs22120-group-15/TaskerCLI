@@ -2,6 +2,7 @@ package uk.ac.aber.cs221.group15.task;
 
 import javafx.beans.property.*;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedHashSet;
@@ -14,9 +15,9 @@ import java.util.Set;
  * steps.
  *
  * @author Darren White
- * @version 0.2.0
+ * @version 0.2.1
  */
-public class Task {
+public class Task implements Serializable {
 
 	/**
 	 * Status for a task that has been abandoned.
@@ -271,10 +272,6 @@ public class Task {
 	 * @link Task.COMPLETED
 	 */
 	public void setStatus(int status) {
-		if (status == ABANDONED) {
-			throw new IllegalArgumentException("Not allowed to set status as ABANDONED!");
-		}
-
 		this.status.set(status);
 	}
 

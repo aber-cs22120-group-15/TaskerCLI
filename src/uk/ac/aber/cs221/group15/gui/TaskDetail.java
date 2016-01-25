@@ -198,7 +198,7 @@ public class TaskDetail extends Stage {
 				task.setStatus(Task.ALLOCATED);
 				// Change the date completed as nothing
 				task.setDateCompleted(null);
-			} else if (task.getStatus() == Task.ALLOCATED) {
+			} else if (task.getStatus() == Task.ALLOCATED || task.getStatus() == Task.ABANDONED) {
 				// Set the status as completed as all steps have comments
 				task.setStatus(Task.COMPLETED);
 				// Set the date completed as now
