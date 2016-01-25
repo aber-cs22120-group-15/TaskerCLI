@@ -32,6 +32,11 @@ public class TaskSync extends TimerTask implements Callable<ObservableList<Task>
 	private final ObservableList<Task> tasks = FXCollections.observableList(new LinkedList<>());
 
 	/**
+	 * The executor service used for scheduling sync updates for tasks
+	 */
+	private final ScheduledExecutorService executor;
+
+	/**
 	 * The current users token
 	 */
 	private final String token;
@@ -42,8 +47,16 @@ public class TaskSync extends TimerTask implements Callable<ObservableList<Task>
 	public TaskSync(String token) {
 		this.token = token;
 
+		// Create the executor scheduling service
+		executor = Executors.newSingleThreadScheduledExecutor(r -> {
+			Thread t = new Thread(r);
+			if (!t.isDaemon()) {
+				t.setDaemon(true);
+			}
+			t.setPriority(Thread.NORM_PRIORITY);
+			return t;
+		});
 		// Used for scheduling sync updates to the server every 5 minutes
-		ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 		executor.scheduleAtFixedRate(this, 0, 5, TimeUnit.MINUTES);
 	}
 
@@ -73,6 +86,10 @@ public class TaskSync extends TimerTask implements Callable<ObservableList<Task>
 		});
 
 		return tasks;
+	}
+
+	public void forceSync() {
+		executor.submit((Callable) this);
 	}
 
 	public ObservableList<Task> getTasks() {

@@ -271,5 +271,7 @@ public class TaskDetail extends Stage {
 		for (Step s : steps) {
 			service.updateTaskStepComment(token, s);
 		}
+
+		TaskerCLI.getTaskSync().forceSync();
 	}
 }
