@@ -14,7 +14,7 @@ import javafx.stage.Stage;
 
 /**
  * @author Darren White
- * @version 0.0.1
+ * @version 0.0.2
  */
 public class Notifications {
 
@@ -56,7 +56,9 @@ public class Notifications {
 			Button btnYes = new Button("Yes");
 			Button btnNo = new Button("No");
 
+			btnYes.setDefaultButton(true);
 			btnYes.setOnAction(yesNoEvent);
+			btnNo.setCancelButton(true);
 			btnNo.setOnAction(yesNoEvent);
 
 			GridPane.setHalignment(btnNo, HPos.RIGHT);

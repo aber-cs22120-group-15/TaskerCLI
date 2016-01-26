@@ -34,9 +34,14 @@ import java.nio.file.StandardOpenOption;
  * to enable a faster login process
  *
  * @author Darren White
- * @version 0.0.7
+ * @version 0.0.8
  */
 public class Login extends Stage {
+
+	/**
+	 * Temporary token used for offline mode
+	 */
+	public static final String TOKEN_OFFLINE = "offline-mode";
 
 	/**
 	 * The title of the window
@@ -230,7 +235,7 @@ public class Login extends Stage {
 							// and close this window
 							Button src = (Button) event.getSource();
 							if (src.getText().equals("Yes")) {
-								token = "offline-mode";
+								token = TOKEN_OFFLINE;
 								close();
 							}
 

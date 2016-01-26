@@ -16,7 +16,7 @@ import java.net.URLEncoder;
  * This class sends requests to the database server
  *
  * @author Darren White
- * @version 0.1.3
+ * @version 0.1.4
  */
 public abstract class Service {
 
@@ -183,7 +183,7 @@ public abstract class Service {
 	 * @throws ParseException If a Parse exception occurs
 	 * @link getStatus()
 	 */
-	protected int submit(String url) throws IOException, ParseException {
+	public int submit(String url) throws IOException, ParseException {
 		return submit(url, null);
 	}
 
@@ -198,7 +198,8 @@ public abstract class Service {
 	 * @throws ParseException If a Parse exception occurs
 	 * @link getStatus()
 	 */
-	protected int submit(String url, String post) throws IOException, ParseException {
+	public int submit(String url, String post) throws IOException, ParseException {
+		// Can't do anything if we're offline
 		if (!checkConnection()) {
 			return -1;
 		}

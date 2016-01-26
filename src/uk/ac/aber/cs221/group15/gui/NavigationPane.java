@@ -1,7 +1,9 @@
 package uk.ac.aber.cs221.group15.gui;
 
+import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import uk.ac.aber.cs221.group15.TaskerCLI;
@@ -12,7 +14,7 @@ import uk.ac.aber.cs221.group15.service.TaskService;
  * where the current view will be at index 0 of the StackPane
  *
  * @author Darren White
- * @version 0.0.8
+ * @version 0.0.9
  */
 public class NavigationPane extends GridPane {
 
@@ -63,15 +65,28 @@ public class NavigationPane extends GridPane {
 
 		// The navigation link to the Tasks view
 		NavButton paneTasks = new NavButton("Tasks");
-		// Mouse EventHandle for the tasks view
+		// Mouse EventHandler for the tasks view
 		paneTasks.setOnMouseClicked(e -> setCurrentView(paneTasks, stack, tv));
 		add(paneTasks, 0, 1);
+
+		// A button used to force sync the tasks
+		NavButton syncTasks = new NavButton("Refresh");
+		// Prevent the selection of the button as its not a view pane
+		syncTasks.addEventFilter(MouseEvent.MOUSE_RELEASED, Event::consume);
+		// On click event handler
+		syncTasks.setOnMouseClicked(e -> {
+			// Force a sync update
+			TaskerCLI.getTaskSync().forceSync();
+			// Unselect the button
+			syncTasks.setSelected(false);
+		});
+		add(syncTasks, 0, 2);
 
 		// The logout button (label in this case)
 		NavButton paneLogout = new NavButton("Logout");
 		// Logout on click
 		paneLogout.setOnMouseClicked(e -> logout());
-		add(paneLogout, 0, 2);
+		add(paneLogout, 0, 3);
 
 		// Column 0 - Ensure everything fills the nav pane
 		ColumnConstraints cc0 = new ColumnConstraints();
@@ -166,8 +181,8 @@ public class NavigationPane extends GridPane {
 			// Make the button fill its cell
 			setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 			// On mouse click unselect all other NavButtons
-			setOnMouseReleased(e -> NavigationPane.this.getChildren().stream().filter(n ->
-					n instanceof NavButton).forEach(n -> ((NavButton) n).setSelected(false)));
+				setOnMouseReleased(e -> NavigationPane.this.getChildren().stream().filter(n ->
+						n instanceof NavButton).forEach(n -> ((NavButton) n).setSelected(false)));
 		}
 	}
 }

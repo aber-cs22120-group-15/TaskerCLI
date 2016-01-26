@@ -8,7 +8,12 @@ import org.json.simple.parser.ParseException;
 import uk.ac.aber.cs221.group15.task.Step;
 import uk.ac.aber.cs221.group15.task.Task;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Calendar;
 
 /**
@@ -16,7 +21,7 @@ import java.util.Calendar;
  * to get all tasks for a user using the unique token
  *
  * @author Darren White
- * @version 0.1.4
+ * @version 0.1.5
  */
 public class TaskService extends Service {
 
@@ -115,6 +120,12 @@ public class TaskService extends Service {
 	 * The key attribute to get the step comment
 	 */
 	private static final String KEY_STEP_COMMENT = "comment";
+
+	/**
+	 * The path to store local sync updates
+	 */
+	private static final String PATH_SYNC = System.getProperty("user.home") +
+			File.separator + ".tasker_sync";
 
 	/**
 	 * Adds the steps to each task in the specified list using the
@@ -312,6 +323,21 @@ public class TaskService extends Service {
 	public void updateTaskStatus(String token, int id, int status, long seconds) throws IOException, ParseException {
 		// Create the url to submit with the method, token, id, status and seconds
 		String url = String.format(URL_SET_STATUS, token, id, status, seconds);
+
+		// If we're offline then save updates to file
+		if (!Service.checkConnection()) {
+			// Create new file if it doens't exit
+			// Append changes to the file
+			try (PrintWriter pw = new PrintWriter(Files.newOutputStream(Paths.get(PATH_SYNC), StandardOpenOption.APPEND, StandardOpenOption.CREATE), true)) {
+				// Print the url to submit
+				pw.println(url);
+				// Print new line to separate
+				pw.println();
+			}
+
+			return;
+		}
+
 		// Submit the request along with the token
 		// and check if an error was returned
 		if (submit(url) == STATUS_ERROR) {
@@ -343,6 +369,23 @@ public class TaskService extends Service {
 	public void updateTaskStepComment(String token, int id, String comment) throws IOException, ParseException {
 		// Create the url to submit with the token
 		String url = String.format(URL_SET_COMMENT, token, id);
+
+		// If we're offline then save updates to file
+		if (!Service.checkConnection()) {
+			// Create new file if it doens't exit
+			// Append changes to the file
+			try (PrintWriter pw = new PrintWriter(Files.newOutputStream(Paths.get(PATH_SYNC), StandardOpenOption.APPEND, StandardOpenOption.CREATE), true)) {
+				// Print the url to submit
+				pw.println(url);
+				// Print the comment for POST
+				pw.println(comment);
+				// Print new line to separate
+				pw.println();
+			}
+
+			return;
+		}
+
 		// Submit the request along with the id and comment (for POST data)
 		// Encode the comment for the url
 		if (submit(url, String.format(URL_SET_COMMENT_POST, encode(comment))) == STATUS_ERROR) {

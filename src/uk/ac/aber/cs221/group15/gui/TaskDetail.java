@@ -99,6 +99,11 @@ public class TaskDetail extends Stage {
 		init(token);
 	}
 
+	/**
+	 * The current Task being edited
+	 *
+	 * @return The Task in view
+	 */
 	public Task getTask() {
 		return task;
 	}
@@ -171,9 +176,13 @@ public class TaskDetail extends Stage {
 			txtStepComment.setWrapText(true);
 			txtStepComment.setOnKeyReleased(e -> {
 				// Task step comment changed
-				edited = true;
 				s.setComment(txtStepComment.getText());
+				s.setEdited(true);
+				edited = true;
 			});
+
+			s.setEdited(false);
+
 			// Increment the row at the end
 			grid.add(txtStepComment, 1, currentRow++);
 		}
@@ -213,6 +222,7 @@ public class TaskDetail extends Stage {
 		// Add the button to save & close the details (if comments have been edited)
 		Button btnSave = new Button("Save");
 		btnSave.setId("btn-save");
+		btnSave.setDefaultButton(true);
 		// Save the task on press and close the window
 		btnSave.setOnAction(e -> {
 			try {
@@ -260,18 +270,21 @@ public class TaskDetail extends Stage {
 			return;
 		}
 
-		// TODO If we are offline save changes locally
-
 		// Update the task status if it has changed
 		if (task.getStatus() != initialStatus) {
 			service.updateTaskStatus(token, task);
 		}
 
-		// Update all the task steps
+		// Update the edited task steps
 		for (Step s : steps) {
-			service.updateTaskStepComment(token, s);
+			if (s.isEdited()) {
+				service.updateTaskStepComment(token, s);
+			}
 		}
 
+		// Write the tasks to file first
+		TaskerCLI.getTaskSync().writeToFile();
+		// Then force a sync with the server
 		TaskerCLI.getTaskSync().forceSync();
 	}
 }
