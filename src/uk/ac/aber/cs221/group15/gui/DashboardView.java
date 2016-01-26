@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.VPos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -120,11 +121,30 @@ public class DashboardView extends GridPane {
 	/**
 	 * Creates a table to display tasks
 	 *
+	 * @param token The token for the current user
 	 * @return A new table to display tasks
 	 */
-	private TableView<Task> createTaskTable() {
+	private TableView<Task> createTaskTable(String token) {
 		// Create the task table for an overview of tasks
 		TableView<Task> table = new TableView<>();
+
+		// Use this for listening to mouse events on each row
+		table.setRowFactory(tv -> {
+			// Create the row
+			TableRow<Task> tr = new TableRow<>();
+			// Add mouse event
+			tr.setOnMouseClicked(e -> {
+				// On double click on a row with a task
+				if (e.getClickCount() == 2 && !tr.isEmpty()) {
+					// Show task details window
+					TaskDetail taskDetail = new TaskDetail(getScene().getWindow(), token, tr.getItem());
+					taskDetail.sizeToScene();
+					taskDetail.showAndWait();
+				}
+			});
+			// Return the row
+			return tr;
+		});
 
 		// Set the items property to display the upcoming tasks
 		table.itemsProperty().bind(Bindings.createObjectBinding(() -> {
@@ -133,9 +153,9 @@ public class DashboardView extends GridPane {
 			// of tasks to display
 			return FXCollections.observableList(
 					tasks.stream()
-					.filter(t -> t.getStatus() == Task.ALLOCATED)
-					.limit(MAX_TASKS)
-					.collect(Collectors.toList()));
+							.filter(t -> t.getStatus() == Task.ALLOCATED)
+							.limit(MAX_TASKS)
+							.collect(Collectors.toList()));
 		}, TaskerCLI.getTaskSync().getTasks()));
 
 		// Create columns: task, due date, member, and status
@@ -210,7 +230,7 @@ public class DashboardView extends GridPane {
 		// Create and add the table to the second row (row 1),
 		// in the first column (col 0)
 		// and allow it to span all columns and one row
-		add(createTaskTable(), 0, 2, panes.size(), 1);
+		add(createTaskTable(token), 0, 2, panes.size(), 1);
 
 		// Make each column equidistant for each panel
 		for (int i = 0; i < panes.size(); i++) {
