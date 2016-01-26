@@ -257,8 +257,16 @@ public class Task {
 		return id;
 	}
 
+	/**
+	 * Reads a task from the input stream
+	 *
+	 * @param in The input stream to read from
+	 * @return The task read from the input stream
+	 * @throws IOException            If an I/O exceptions occurs
+	 * @throws ClassNotFoundException If a ClassNotFoundException occurs
+	 */
 	public static Task readTask(ObjectInputStream in) throws IOException, ClassNotFoundException {
-
+		// Read the task data
 		int id = in.readInt();
 		String title = in.readUTF();
 		String creator = in.readUTF();
@@ -267,9 +275,12 @@ public class Task {
 		Calendar dateCompleted = (Calendar) in.readObject();
 		int status = in.readInt();
 
+		// Create the task
 		Task t = new Task(id, title, creator, dateCreated, dateDue, dateCompleted, status);
 
+		// Read number of steps
 		int len = in.readInt();
+		// Parse all the steps and add them
 		while (len-- > 0) {
 			t.addStep(Step.readStep(in));
 		}
@@ -341,11 +352,25 @@ public class Task {
 				'}';
 	}
 
+	/**
+	 * Writes this task to the output stream
+	 *
+	 * @param out The output stream to write to
+	 * @throws IOException If an I/O exception occurs
+	 */
 	public void writeTask(ObjectOutputStream out) throws IOException {
 		writeTask(this, out);
 	}
 
-	public static void writeTask(Task t, ObjectOutputStream out) throws IOException {
+	/**
+	 * Writes the task to the output stream
+	 *
+	 * @param t   The task to write
+	 * @param out The output stream to write to
+	 * @throws IOException If an I/O exception occurs
+	 */
+	private static void writeTask(Task t, ObjectOutputStream out) throws IOException {
+		// Write all the task data
 		out.writeInt(t.getId());
 		out.writeUTF(t.getTitle());
 		out.writeUTF(t.getCreator());
@@ -353,7 +378,9 @@ public class Task {
 		out.writeObject(t.getDateDue());
 		out.writeObject(t.getDateCompleted());
 		out.writeInt(t.getStatus());
+		// Write the number of steps
 		out.writeInt(t.getSteps().size());
+		// Iterate the steps and write them
 		t.getSteps().forEach(step -> {
 			try {
 				step.writeStep(out);

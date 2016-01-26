@@ -200,7 +200,7 @@ public class Step {
 	 * @param out The output stream to write to
 	 * @throws IOException If an I/O Exception occurs
 	 */
-	public static void writeStep(Step step, ObjectOutputStream out) throws IOException {
+	private static void writeStep(Step step, ObjectOutputStream out) throws IOException {
 		out.writeInt(step.getId());
 		out.writeUTF(step.getTitle());
 		out.writeUTF(step.getComment() != null ? step.getComment() : "");
