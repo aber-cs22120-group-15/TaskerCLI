@@ -203,6 +203,6 @@ public class Step {
 	public static void writeStep(Step step, ObjectOutputStream out) throws IOException {
 		out.writeInt(step.getId());
 		out.writeUTF(step.getTitle());
-		out.writeUTF(step.getComment());
+		out.writeUTF(step.getComment() != null ? step.getComment() : "");
 	}
 }
