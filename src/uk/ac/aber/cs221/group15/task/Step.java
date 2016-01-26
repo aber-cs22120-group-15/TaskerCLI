@@ -41,6 +41,7 @@ public class Step {
 	 * Creates a new step with the id, title and
 	 * the user comment if it exists
 	 *
+	 * @param id      The step id
 	 * @param title   The title of the task step
 	 * @param comment The user comment of the task step
 	 */
@@ -128,7 +129,7 @@ public class Step {
 	 *
 	 * @return If the Step has been edited
 	 */
-	public boolean isEdited(){
+	public boolean isEdited() {
 		return editedProperty().get();
 	}
 
@@ -137,7 +138,7 @@ public class Step {
 	 *
 	 * @param in The input stream to read from
 	 * @return The new step created from the input stream
-	 * @throws IOException If an I/O Exception occurs
+	 * @throws IOException            If an I/O Exception occurs
 	 * @throws ClassNotFoundException If a ClassNotFoundException occurs
 	 */
 	public static Step readStep(ObjectInputStream in) throws IOException, ClassNotFoundException {

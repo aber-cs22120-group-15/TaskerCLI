@@ -378,7 +378,7 @@ public class TaskService extends Service {
 				// Print the url to submit
 				pw.println(url);
 				// Print the comment for POST
-				pw.println(comment);
+				pw.println(String.format(URL_SET_COMMENT_POST, encode(comment)));
 				// Print new line to separate
 				pw.println();
 			}

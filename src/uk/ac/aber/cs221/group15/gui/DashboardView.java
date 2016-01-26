@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * upcoming tasks and a few major details
  *
  * @author Darren White
- * @version 0.0.11
+ * @version 0.0.12
  */
 public class DashboardView extends GridPane {
 

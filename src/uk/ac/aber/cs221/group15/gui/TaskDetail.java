@@ -181,6 +181,7 @@ public class TaskDetail extends Stage {
 				edited = true;
 			});
 
+			// Steps aren't edited at start
 			s.setEdited(false);
 
 			// Increment the row at the end
