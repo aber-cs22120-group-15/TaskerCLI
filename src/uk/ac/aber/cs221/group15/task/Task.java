@@ -43,7 +43,7 @@ public class Task {
 	 * The date format used for date/time values
 	 */
 	public static final SimpleDateFormat DATE_FORMAT =
-			new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+			new SimpleDateFormat("yyyy-MM-dd");
 
 	/**
 	 * The unique task id
