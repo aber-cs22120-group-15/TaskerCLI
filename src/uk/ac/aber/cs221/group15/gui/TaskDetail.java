@@ -33,7 +33,7 @@ import java.util.Set;
  * set tasks as completed (or uncompleted)
  *
  * @author Darren White
- * @version 0.1.3
+ * @version 0.1.4
  */
 public class TaskDetail extends Stage {
 
