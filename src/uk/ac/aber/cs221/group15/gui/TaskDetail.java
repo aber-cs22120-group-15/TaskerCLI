@@ -33,7 +33,7 @@ import java.util.Set;
  * set tasks as completed (or uncompleted)
  *
  * @author Darren White
- * @version 0.1.4
+ * @version 0.1.5
  */
 public class TaskDetail extends Stage {
 
@@ -182,6 +182,12 @@ public class TaskDetail extends Stage {
 			txtStepComment.setPrefColumnCount(20);
 			txtStepComment.setPrefRowCount(2);
 			txtStepComment.setWrapText(true);
+			// Prevent more than 2000 characters
+			txtStepComment.textProperty().addListener((observable, oldValue, newValue) -> {
+				if (newValue.length() > 2000) {
+					txtStepComment.deleteText(2000, newValue.length());
+				}
+			});
 			txtStepComment.setOnKeyReleased(e -> {
 				// Task step comment changed
 				s.setComment(txtStepComment.getText());
