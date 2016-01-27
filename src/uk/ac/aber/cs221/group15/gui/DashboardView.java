@@ -162,7 +162,6 @@ public class DashboardView extends GridPane {
 		TableColumn<Task, String> titleCol = new TableColumn<>("Task");
 		TableColumn<Task, Calendar> dueDateCol = new TableColumn<>("Due date");
 		TableColumn<Task, String> creatorCol = new TableColumn<>("Assigned by");
-		TableColumn<Task, String> statusCol = new TableColumn<>("Status");
 
 		// Set each of the cell value factories (which fields they
 		// correspond to in the Task class)
@@ -171,10 +170,6 @@ public class DashboardView extends GridPane {
 		dueDateCol.setCellFactory(param -> new CalendarCell<>());
 		dueDateCol.setCellValueFactory(t -> t.getValue().dateDueProperty());
 		creatorCol.setCellValueFactory(t -> t.getValue().creatorProperty());
-		// Convert the status integer to readable string
-		statusCol.setCellValueFactory(t -> Bindings.createStringBinding(() ->
-						t.getValue().getStatusString(),
-				t.getValue().statusProperty()));
 
 		// Set the column dyanmic sizes
 		// Title col - 35% width (subtract 2 so that the horizontal scrollbar doesn't show)
@@ -184,13 +179,11 @@ public class DashboardView extends GridPane {
 		titleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.35).subtract(2));
 		dueDateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
 		creatorCol.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
-		statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
 
 		// Add the columns to the table
 		table.getColumns().add(titleCol);
 		table.getColumns().add(dueDateCol);
 		table.getColumns().add(creatorCol);
-		table.getColumns().add(statusCol);
 
 		// Return the new table created
 		return table;
