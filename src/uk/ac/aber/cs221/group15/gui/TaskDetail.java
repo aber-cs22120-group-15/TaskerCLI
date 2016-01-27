@@ -7,6 +7,7 @@ import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -115,12 +116,19 @@ public class TaskDetail extends Stage {
 		// Create the grid that we are going to
 		// put all the component onto
 		GridPane grid = new GridPane();
+		// Use this to contain everything so it fits on the screen
+		ScrollPane scroll = new ScrollPane(grid);
 		// Create the scene
-		Scene scene = new Scene(grid);
+		Scene scene = new Scene(scroll);
 		// Use this so we know which row we are currently adding to
 		int currentRow = 0;
 		// A label to display any errors
 		Label lblErr = new Label();
+
+		// Set the maximum size that the scrollpane should be
+		scroll.setMaxSize(500, 500);
+		// Don't display horizontal scrollbar as we don't need it
+		scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
 		// Set padding & gaps to 10px
 		grid.setPadding(new Insets(10));
@@ -163,7 +171,7 @@ public class TaskDetail extends Stage {
 			// Add the description label
 			Label lblStepDesc = new Label(s.getTitle());
 			lblStepDesc.setId("lbl-step-desc");
-			lblStepDesc.setMaxWidth(300);
+			lblStepDesc.setMaxWidth(200);
 			lblStepDesc.setWrapText(true);
 			grid.add(lblStepDesc, 0, currentRow);
 
@@ -262,6 +270,7 @@ public class TaskDetail extends Stage {
 		// Set the stylesheet for css styling
 		scene.getStylesheets().add(TaskerCLI.getResource("resources/css/TaskDetail.css").toExternalForm());
 		// Sets the scene
+		sizeToScene();
 		setScene(scene);
 	}
 
