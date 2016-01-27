@@ -265,6 +265,14 @@ public class TaskDetail extends Stage {
 		setScene(scene);
 	}
 
+	/**
+	 * Saves the Task to the server with the performed edits if there are any
+	 *
+	 * @param token The user token
+	 * @param steps The steps of the task
+	 * @throws IOException    If an I/O exception occurs
+	 * @throws ParseException If a ParseException occurs
+	 */
 	private void save(String token, Set<Step> steps) throws IOException, ParseException {
 		// Check if changes were made
 		if (!edited) {

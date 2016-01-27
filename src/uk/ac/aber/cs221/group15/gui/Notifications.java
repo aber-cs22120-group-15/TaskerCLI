@@ -131,6 +131,7 @@ public class Notifications {
 
 	/**
 	 * Set the title for this notification
+	 *
 	 * @param title The title to use
 	 * @return The Notifications instance
 	 */

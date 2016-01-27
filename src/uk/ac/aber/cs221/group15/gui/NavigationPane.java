@@ -7,7 +7,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import uk.ac.aber.cs221.group15.TaskerCLI;
-import uk.ac.aber.cs221.group15.service.TaskService;
 
 /**
  * This class allows navigation between different views
@@ -22,11 +21,6 @@ public class NavigationPane extends GridPane {
 	 * The height for each navigation item
 	 */
 	private static final int NAV_ITEM_HEIGHT = 50;
-
-	/**
-	 * The service used to submit requests to get task steps
-	 */
-	private static final TaskService service = new TaskService();
 
 	/**
 	 * Creates a new navigation pane using the StackPane
