@@ -2,6 +2,7 @@ package uk.ac.aber.cs221.group15;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import uk.ac.aber.cs221.group15.gui.Login;
 import uk.ac.aber.cs221.group15.gui.OverviewPane;
@@ -16,7 +17,7 @@ import java.nio.file.Paths;
  * will then show the main window
  *
  * @author Darren White
- * @version 0.0.5
+ * @version 0.0.6
  */
 public class TaskerCLI extends Application {
 
@@ -125,6 +126,10 @@ public class TaskerCLI extends Application {
 		// Create login window
 		// Use primary stage as owner
 		Login login = new Login(stage);
+
+		// Add the taskbar icon
+		login.getIcons().add(new Image(getResource("resources/images/icon.png").toExternalForm()));
+
 		// Resize the login window
 		login.sizeToScene();
 		// Show and wait until it closes
@@ -147,6 +152,9 @@ public class TaskerCLI extends Application {
 		OverviewPane ovp = new OverviewPane(token);
 		// Create a new scene with the default width & height
 		Scene scene = new Scene(ovp, APP_WIDTH, APP_HEIGHT);
+
+		// Add the taskbar icon
+		stage.getIcons().add(new Image(getResource("resources/images/icon.png").toExternalForm()));
 
 		// Set the stylesheet for css styling
 		scene.getStylesheets().add(TaskerCLI.getResource("resources/css/TaskerCLI.css").toExternalForm());

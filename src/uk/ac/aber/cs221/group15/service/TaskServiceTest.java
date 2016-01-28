@@ -33,7 +33,7 @@ public class TaskServiceTest {
 	/**
 	 * Used for selecting a task to update
 	 */
-	private int taskIndex = 0;
+	private int taskIndex = 1;
 
 	/**
 	 * Used for selecting a step to update

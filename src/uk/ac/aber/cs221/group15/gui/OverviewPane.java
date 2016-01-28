@@ -9,14 +9,14 @@ import javafx.scene.layout.*;
  * and the NavigationPane
  *
  * @author Darren White
- * @version 0.0.2
+ * @version 0.0.3
  */
 public class OverviewPane extends GridPane {
 
 	/**
 	 * Represents the height of the logo/banner
 	 */
-	private static final int BANNER_HEIGHT = 125;
+	private static final int BANNER_HEIGHT = 160;
 
 	/**
 	 * Represents the width of the navigation pane

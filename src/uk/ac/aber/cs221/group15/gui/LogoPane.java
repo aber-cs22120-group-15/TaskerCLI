@@ -1,15 +1,15 @@
 package uk.ac.aber.cs221.group15.gui;
 
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
+import uk.ac.aber.cs221.group15.TaskerCLI;
 
 /**
  * This class will display a banner/logo for the client
  *
  * @author Darren White
- * @version 0.0.2
+ * @version 0.0.3
  */
 public class LogoPane extends StackPane {
 
@@ -26,18 +26,12 @@ public class LogoPane extends StackPane {
 	private void init() {
 		// Set the id for css styles
 		setId("logo-pane");
-		// Set padding to 10px
-		setPadding(new Insets(10));
 
-		// TODO Add logo imageview
-		// Use a temporary placeholder
-		Label tmp = new Label("TaskerCLI");
-		// Set the label id for css stlying
-		tmp.setId("lbl-banner");
+		// Create an image view to hold the banner logo image
+		ImageView img = new ImageView(TaskerCLI.getResource("resources/images/banner.png").toExternalForm());
 		// Add it to this pane
-		getChildren().add(tmp);
-
-		// Center the label
-		setAlignment(tmp, Pos.CENTER);
+		getChildren().add(img);
+		// Center the banner
+		setAlignment(img, Pos.CENTER_LEFT);
 	}
 }
