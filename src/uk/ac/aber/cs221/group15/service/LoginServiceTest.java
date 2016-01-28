@@ -9,15 +9,22 @@ import static org.junit.Assert.assertNull;
 /**
  * @author Simon Scott
  * @author Darren White
- * @version 0.0.1
+ * @version 0.0.2
  */
 public class LoginServiceTest {
 
-	private LoginService service;
+	/**
+	 * Used for login protocols
+	 */
+	private LoginService loginService;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Before
 	public void setUp() throws Exception {
-		service = new LoginService();
+		// Create a new LoginService for login
+		loginService = new LoginService();
 	}
 
 	/**
@@ -27,10 +34,44 @@ public class LoginServiceTest {
 	 */
 	@Test
 	public void testLogin() throws Exception {
-		String token = service.login("sis22@aber.ac.uk", "scott");
+		// Use correct email
+		String email = "sis22@aber.ac.uk";
+		// Use correct password
+		String password = "scott";
+
+		System.out.println("Login with correct credentials...");
+		System.out.println("Email: " + email);
+		System.out.println("Password: " + password);
+		System.out.println();
+
+		// Login with correct email & password
+		String token = loginService.login(email, password);
+
+		System.out.println("Login update check...");
+		System.out.println("Token: " + token);
+		System.out.println();
+
+		// Token should be valid
 		assertNotNull(token);
 
-		token = service.login("sis@aber.ac.uk", "scott");
+		// Change to incorrect email
+		email = "sis@aber.ac.uk";
+		// Change to incorrect password
+		password = "scott1";
+
+		System.out.println("Login with incorrect credentials...");
+		System.out.println("Email: " + email);
+		System.out.println("Password: " + password);
+		System.out.println();
+
+		// Login with incorrect email & password
+		token = loginService.login(email, password);
+
+		System.out.println("Login update check...");
+		System.out.println("Token: " + token);
+		System.out.println();
+
+		// Token should be null
 		assertNull(token);
 	}
 }
