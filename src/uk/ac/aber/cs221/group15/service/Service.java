@@ -113,7 +113,7 @@ public abstract class Service {
 	 * submit has not been called
 	 *
 	 * @return The error message response
-	 * @link getStatus()
+	 * {@link Service#getStatus()}
 	 */
 	public String getErrorMessage() {
 		// If the status is not error, there is no error message
@@ -132,7 +132,7 @@ public abstract class Service {
 	 * if the status is not the success status.
 	 *
 	 * @return The response object
-	 * @link getStatus()
+	 * {@link Service#getStatus()}
 	 */
 	public Object getResponse() {
 		// If the status is not success, there is no response object
@@ -149,8 +149,8 @@ public abstract class Service {
 	 * STATUS_SUCCESS and STATUS_ERROR.
 	 *
 	 * @return A status value
-	 * @link STATUS_SUCCESS
-	 * @link STATUS_ERROR
+	 * {@link Service#STATUS_SUCCESS}
+	 * {@link Service#STATUS_ERROR}
 	 */
 	public int getStatus() {
 		// Must submit before getting the status
@@ -181,7 +181,7 @@ public abstract class Service {
 	 * @return The status value
 	 * @throws IOException    If an I/O exception occurs
 	 * @throws ParseException If a Parse exception occurs
-	 * @link getStatus()
+	 * {@link Service#getStatus()}
 	 */
 	public int submit(String url) throws IOException, ParseException {
 		return submit(url, null);
@@ -196,7 +196,7 @@ public abstract class Service {
 	 * @return The status value
 	 * @throws IOException    If an I/O exception occurs
 	 * @throws ParseException If a Parse exception occurs
-	 * @link getStatus()
+	 * {@link Service#getStatus()}
 	 */
 	public int submit(String url, String post) throws IOException, ParseException {
 		// Can't do anything if we're offline

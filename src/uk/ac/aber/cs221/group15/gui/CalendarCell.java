@@ -7,7 +7,7 @@ import java.util.Calendar;
 
 /**
  * This class is used to represent Calendar objects in a TableCell
- * using the date format used to parse & format tasks
+ * using the date format used to parse and format tasks
  *
  * @author Darren White
  * @version 0.0.1

@@ -64,7 +64,7 @@ public class TaskDetail extends Stage {
 	private boolean edited = false;
 
 	/**
-	 * The task being viewed & edited
+	 * The task being viewed and edited
 	 */
 	private Task task;
 
@@ -72,6 +72,7 @@ public class TaskDetail extends Stage {
 	 * Creates a new task detail window
 	 *
 	 * @param owner The main application
+	 * @param token The user token to use
 	 * @param task  The task to display details for
 	 */
 	public TaskDetail(Window owner, String token, Task task) {
@@ -111,6 +112,8 @@ public class TaskDetail extends Stage {
 
 	/**
 	 * Initializes this windows components
+	 *
+	 * @param token The user token to use
 	 */
 	private void init(String token) {
 		// Create the grid that we are going to

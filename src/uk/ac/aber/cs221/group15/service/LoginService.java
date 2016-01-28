@@ -50,7 +50,7 @@ public class LoginService extends Service {
 	 * @return The unique token/key for the user
 	 * @throws IOException    If an I/O exception occurs
 	 * @throws ParseException If a Parse exception occurs
-	 * @link Service.submit()
+	 * {@link Service#submit(String)}
 	 * @see Service
 	 */
 	public String login(String email, String pwd) throws IOException, ParseException {

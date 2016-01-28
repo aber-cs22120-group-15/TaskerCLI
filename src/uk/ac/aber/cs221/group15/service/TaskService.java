@@ -134,6 +134,8 @@ public class TaskService extends Service {
 	 *
 	 * @param tasks The list of tasks to add steps to
 	 * @param token The token for the current user
+	 * @throws IOException    If an I/O exception occurs
+	 * @throws ParseException If a ParseException occurs
 	 */
 	private void addTaskSteps(ObservableList<Task> tasks, String token) throws IOException, ParseException {
 		// All the task ids concataned and separated with commas
@@ -174,6 +176,7 @@ public class TaskService extends Service {
 	 * Gets the tasks from the database for the user
 	 * using the token
 	 *
+	 * @param tasks The list of tasks to add to
 	 * @param token The token for the current user
 	 * @throws IOException    If an I/O exception occurs
 	 * @throws ParseException If a Parse exception occurs
@@ -228,7 +231,6 @@ public class TaskService extends Service {
 	 *
 	 * @param s The date in string format
 	 * @return The date parsed from the string
-	 * @link format
 	 */
 	private Calendar parseDate(String s) {
 		// Create a new Calendar to store the date in
@@ -297,6 +299,8 @@ public class TaskService extends Service {
 	 *
 	 * @param token The token for the current user
 	 * @param task  The task to update
+	 * @throws IOException    If an I/O exception occurs
+	 * @throws ParseException If a ParseException occurs
 	 */
 	public void updateTaskStatus(String token, Task task) throws IOException, ParseException {
 		long seconds = 0;
@@ -315,6 +319,8 @@ public class TaskService extends Service {
 	 * @param id      The unique id for the task
 	 * @param status  The status to set for the task
 	 * @param seconds The timestamp in seconds when the task was completed
+	 * @throws IOException    If an I/O exception occurs
+	 * @throws ParseException If a ParseException occurs
 	 */
 	public void updateTaskStatus(String token, int id, int status, long seconds) throws IOException, ParseException {
 		// Create the url to submit with the method, token, id, status and seconds
@@ -349,6 +355,8 @@ public class TaskService extends Service {
 	 *
 	 * @param token The token for the current user
 	 * @param step  The task step to update
+	 * @throws IOException    If an I/O exception occurs
+	 * @throws ParseException If a ParseException occurs
 	 */
 	public void updateTaskStepComment(String token, Step step) throws IOException, ParseException {
 		updateTaskStepComment(token, step.getId(), step.getComment());
@@ -361,6 +369,8 @@ public class TaskService extends Service {
 	 * @param token   The token for the current user
 	 * @param id      The unique id for the task step
 	 * @param comment The comment to set for the task step
+	 * @throws IOException    If an I/O exception occurs
+	 * @throws ParseException If a ParseException occurs
 	 */
 	public void updateTaskStepComment(String token, int id, String comment) throws IOException, ParseException {
 		// Create the url to submit with the token

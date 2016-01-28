@@ -143,6 +143,7 @@ public class TaskerCLI extends Application {
 	 * Displays the main window
 	 *
 	 * @param stage The primary stage
+	 * @param token The user token to use
 	 */
 	public static void startOverview(Stage stage, String token) {
 		// Start the task sync schedule

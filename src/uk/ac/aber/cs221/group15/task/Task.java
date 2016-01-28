@@ -203,9 +203,9 @@ public class Task {
 	 * The current status of this task
 	 *
 	 * @return The current status
-	 * @link Task.ABANDONED
-	 * @link Task.ALLOCATED
-	 * @link Task.COMPLETED
+	 * {@link Task#ABANDONED}
+	 * {@link Task#ALLOCATED}
+	 * {@link Task#COMPLETED}
 	 */
 	public int getStatus() {
 		return statusProperty().get();
@@ -301,8 +301,8 @@ public class Task {
 	 * Set the status for this task
 	 *
 	 * @param status The status to change this task to
-	 * @link Task.ALLOCATED
-	 * @link Task.COMPLETED
+	 * {@link Task#ALLOCATED}
+	 * {@link Task#COMPLETED}
 	 */
 	public void setStatus(int status) {
 		this.status.set(status);
