@@ -67,12 +67,22 @@ public class TaskerCLI extends Application {
 	}
 
 	/**
-	 * Gets the instance of the task syncer
+	 * Gets the instance of the task sync
 	 *
-	 * @return The instance of the SyncTask class
+	 * @return The instance of the TaskSync class
 	 */
 	public static TaskSync getTaskSync() {
 		return taskSync;
+	}
+
+	/**
+	 * Gets the user directory to store files in
+	 *
+	 * @return The user directory path
+	 */
+	public static String getUserHomeDir() {
+		// Use system properties to get the user home directory
+		return System.getProperty("user.home");
 	}
 
 	/**

@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+import uk.ac.aber.cs221.group15.TaskerCLI;
 import uk.ac.aber.cs221.group15.task.Step;
 import uk.ac.aber.cs221.group15.task.Task;
 
@@ -124,7 +125,7 @@ public class TaskService extends Service {
 	/**
 	 * The path to store local sync updates
 	 */
-	private static final String PATH_SYNC = System.getProperty("user.home") +
+	private static final String PATH_SYNC = TaskerCLI.getUserHomeDir() +
 			File.separator + ".tasker_sync";
 
 	/**

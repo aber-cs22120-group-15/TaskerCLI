@@ -35,13 +35,13 @@ public class TaskSync extends TimerTask implements Callable<ObservableList<Task>
 	/**
 	 * The path to store local sync updates
 	 */
-	private static final String PATH_SYNC = System.getProperty("user.home") +
+	private static final String PATH_SYNC = TaskerCLI.getUserHomeDir() +
 			File.separator + ".tasker_sync";
 
 	/**
 	 * The path to store tasks locally
 	 */
-	private static final String PATH_TASKS = System.getProperty("user.home") +
+	private static final String PATH_TASKS = TaskerCLI.getUserHomeDir() +
 			File.separator + ".tasker_tasks";
 
 	/**

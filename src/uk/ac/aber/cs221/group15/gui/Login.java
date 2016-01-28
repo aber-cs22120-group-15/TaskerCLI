@@ -61,7 +61,7 @@ public class Login extends Stage {
 	/**
 	 * The path to store user credentials
 	 */
-	private static final String PATH_LOGIN = System.getProperty("user.home") +
+	private static final String PATH_LOGIN = TaskerCLI.getUserHomeDir() +
 			File.separator + ".tasker_login";
 
 	/**
