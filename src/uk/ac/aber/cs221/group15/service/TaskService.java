@@ -147,13 +147,8 @@ public class TaskService extends Service {
 		// Submit the request along with the token
 		int status = submit(url);
 
-		// An error occurred, handle it
-		if (status == STATUS_ERROR) {
-			// This should never happen as the token
-			// is retrieved at login and task ids are loaded
-			// from list_tasks method
-			throw new IllegalStateException(getErrorMessage());
-		} else if (status == STATUS_SUCCESS) {
+		// If success then add the steps otherwise there are no steps
+		if (status == STATUS_SUCCESS) {
 			// Get the response object
 			JSONObject response = (JSONObject) getResponse();
 			// Get all the steps from the response object

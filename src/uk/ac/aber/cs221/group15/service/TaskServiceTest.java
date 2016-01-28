@@ -61,7 +61,7 @@ public class TaskServiceTest {
 	@Test
 	public void updateTaskStatusTest() throws Exception {
 		// Login with correct details to get token
-		String token = loginService.login("sis22@aber.ac.uk", "scott");
+		String token = loginService.login("sis22@aber.ac.uk", "Scott!");
 
 		// Create task sync to load tasks
 		TaskSync sync = new TaskSync(token);
@@ -124,7 +124,7 @@ public class TaskServiceTest {
 	@Test
 	public void updateTaskStepCommentTest() throws Exception {
 		// Login with correct details to get token
-		String token = loginService.login("sis22@aber.ac.uk", "scott");
+		String token = loginService.login("sis22@aber.ac.uk", "Scott!");
 		// Create task sync to load tasks
 		TaskSync sync = new TaskSync(token);
 

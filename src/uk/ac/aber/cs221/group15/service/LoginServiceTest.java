@@ -37,7 +37,7 @@ public class LoginServiceTest {
 		// Use correct email
 		String email = "sis22@aber.ac.uk";
 		// Use correct password
-		String password = "scott";
+		String password = "Scott!";
 
 		System.out.println("Login with correct credentials...");
 		System.out.println("Email: " + email);

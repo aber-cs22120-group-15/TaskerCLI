@@ -33,7 +33,7 @@ public abstract class Service {
 	/**
 	 * The base url of the database
 	 */
-	protected static final String URL_BASE = "http://taskerman.ngrok.io/";
+	protected static final String URL_BASE = "http://users.aber.ac.uk/dkm2/TaskerMAN/";
 
 	/**
 	 * The base api url
