@@ -2,7 +2,7 @@
 
 ## Install instructions
 
-Prerequisites include the Java 8 Runetime Environment to be installed before running TaskerCLI. Once installed the TaskerCLI.jar can be downloaded from the TaskerCLI repository located at:
+Prerequisites include the Java 8 Runtime Environment to be installed before running TaskerCLI. Once installed the TaskerCLI.jar can be downloaded from the TaskerCLI repository located at:
 
 `https://github.com/aber-cs22120-group-15/TaskerCLI`
 
