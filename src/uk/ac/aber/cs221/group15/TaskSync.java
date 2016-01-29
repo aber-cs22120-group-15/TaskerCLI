@@ -13,8 +13,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
  * when connected. All syncing is done in here.
  *
  * @author Darren White
- * @version 0.0.4
+ * @version 0.0.5
  */
 public class TaskSync extends TimerTask implements Callable<ObservableList<Task>> {
 
@@ -100,9 +100,6 @@ public class TaskSync extends TimerTask implements Callable<ObservableList<Task>
 		// The path to store the tasks locally
 		Path p = Paths.get(PATH_TASKS);
 
-		// Check for local updates to submit
-		checkSyncUpdates();
-
 		// If we don't have a connection to the server then load the locally
 		// stored tasks
 		if (!Service.checkConnection()) {
@@ -133,6 +130,10 @@ public class TaskSync extends TimerTask implements Callable<ObservableList<Task>
 		// Store the tasks locally
 		writeToFile(newTasks);
 
+		// Check for local updates to submit
+		// TaskerSRV takes priority
+		checkSyncUpdates(newTasks);
+
 		return tasks;
 	}
 
@@ -140,9 +141,9 @@ public class TaskSync extends TimerTask implements Callable<ObservableList<Task>
 	 * Check if there are any local updates to be submitted and synced with
 	 * the server
 	 *
-	 * @throws IOException If an I/O exception occurs
+	 * @throws Exception If an exception occurs
 	 */
-	private void checkSyncUpdates() throws IOException {
+	private void checkSyncUpdates(ObservableList<Task> newTasks) throws Exception {
 		// The path for the local updates
 		Path sync = Paths.get(PATH_SYNC);
 		// Contents of the file
@@ -168,13 +169,28 @@ public class TaskSync extends TimerTask implements Callable<ObservableList<Task>
 		// First line is the url
 		// Second line is post argument (might be blank)
 		// Third line is blank
-		Matcher m = Pattern.compile("(http.*)\\n(.*)\\n").matcher(content);
+		Matcher m = Pattern.compile("(http.*)\\n(.*)\\n(.*)\\n(.*)\\n").matcher(content);
 
 		// Iterate all matches
 		while (m.find()) {
 			// Get the matches
-			String url = m.group(1), post = m.group(2);
+			String url = m.group(1), data = m.group(3), post = m.group(4);
+			int id = Integer.parseInt(m.group(2));
 			int status = -1;
+
+			Optional<Task> t = newTasks.stream().filter(p -> p.getId() == id).findFirst();
+
+			if (t.isPresent()) {
+				try {
+					int newStatus = Integer.parseInt(data);
+					int srvStatus = t.get().getStatus();
+
+					if (srvStatus == Task.ABANDONED) {
+						continue;
+					}
+				} catch (NumberFormatException ignored) {
+				}
+			}
 
 			// When offline a temporary token is used so replace it
 			url = url.replace(Login.TOKEN_OFFLINE, token);
@@ -182,31 +198,23 @@ public class TaskSync extends TimerTask implements Callable<ObservableList<Task>
 			try {
 				// Submit the request (if there is a post, send it too)
 				if (!post.isEmpty()) {
-					status = service.submit(url, post);
+					service.submit(url, post);
 				} else {
-					status = service.submit(url);
+					service.submit(url);
 				}
 			} catch (ParseException e) {
 				System.err.println("Unable to sync local updates");
 				e.printStackTrace();
-			}
-
-			// If we couldn't submit the update then add it back to the file
-			// in the same format
-			if (status != Service.STATUS_SUCCESS) {
-				failedContent += url + '\n' + post + '\n' + '\n';
 			}
 		}
 
 		// Delete the old updates
 		Files.delete(sync);
 
-		// If there are any failed updates, save them
-		if (!failedContent.isEmpty()) {
-			try (PrintWriter pw = new PrintWriter(Files.newOutputStream(sync, StandardOpenOption.CREATE_NEW))) {
-				pw.println(failedContent);
-			}
-		}
+		// Re-update from the server to ensure changes have been made!
+		// This will not cause an infinite loop as the file will be deleted
+		// after syncing!
+		call();
 	}
 
 	/**
@@ -231,7 +239,7 @@ public class TaskSync extends TimerTask implements Callable<ObservableList<Task>
 	 * Read the tasks locally from file if the file exists
 	 *
 	 * @return The local task list
-	 * @throws IOException If an I/O exception occurs
+	 * @throws IOException            If an I/O exception occurs
 	 * @throws ClassNotFoundException If a ClassNotFoundExceptionOccurs
 	 */
 	public ObservableList<Task> readFromFile() throws IOException, ClassNotFoundException {

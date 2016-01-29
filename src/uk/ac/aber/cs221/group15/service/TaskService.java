@@ -22,7 +22,7 @@ import java.util.Calendar;
  * to get all tasks for a user using the unique token
  *
  * @author Darren White
- * @version 0.1.5
+ * @version 0.1.6
  */
 public class TaskService extends Service {
 
@@ -333,6 +333,10 @@ public class TaskService extends Service {
 			try (PrintWriter pw = new PrintWriter(Files.newOutputStream(Paths.get(PATH_SYNC), StandardOpenOption.APPEND, StandardOpenOption.CREATE), true)) {
 				// Print the url to submit
 				pw.println(url);
+				// Print the id
+				pw.println(id);
+				// Print the status
+				pw.println(status);
 				// Print new line to separate
 				pw.println();
 			}
@@ -383,6 +387,10 @@ public class TaskService extends Service {
 			try (PrintWriter pw = new PrintWriter(Files.newOutputStream(Paths.get(PATH_SYNC), StandardOpenOption.APPEND, StandardOpenOption.CREATE), true)) {
 				// Print the url to submit
 				pw.println(url);
+				// Print the id
+				pw.println(id);
+				// Print the comment
+				pw.println(comment);
 				// Print the comment for POST
 				pw.println(String.format(URL_SET_COMMENT_POST, encode(comment)));
 				// Print new line to separate
